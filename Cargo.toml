@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "crates/bwrapi-internal-model",
     "crates/layout",
     "crates/memory",
 ]
