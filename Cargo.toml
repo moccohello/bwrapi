@@ -1,8 +1,9 @@
 [workspace]
 members = [
+    "crates/bwrapi-xtask",
     "crates/bwrapi-internal-model",
-    "crates/layout",
     "crates/memory",
+    "crates/layout",
     "crates/engine",
     "crates/ffi",
     "crates/game",
