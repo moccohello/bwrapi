@@ -4,6 +4,7 @@ members = [
     "crates/layout",
     "crates/memory",
     "crates/engine",
+    "crates/ffi",
     "crates/game",
 ]
 resolver = "2"

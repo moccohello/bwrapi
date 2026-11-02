@@ -1,0 +1,48 @@
+[package]
+name = "bwrapi-ffi"
+version = "1.0.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "bwrapi"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "bwrapi-gen"
+path = "src/gen.rs"
+
+# Ships beside bwrapi.dll and injects games of its own pointer width for
+# injectors of the other width.
+[[bin]]
+name = "bwrapi-inject"
+path = "src/inject.rs"
+
+# The frame-module example loads into a running game beside bwrapi.dll and
+# reaches the ABI through it, so it is a DLL itself.
+[[example]]
+name = "frame_module"
+crate-type = ["cdylib"]
+
+[[example]]
+name = "frame_module_wait"
+crate-type = ["cdylib"]
+
+[dependencies]
+bwrapi-engine = { path = "../engine" }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.52", features = [
+    "Win32_Foundation",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Memory",
+    "Win32_System_Performance",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+] }
+bwrapi-game = { path = "../game" }
+
+[dev-dependencies]
+bwrapi-engine = { path = "../engine", features = ["test-support"] }
