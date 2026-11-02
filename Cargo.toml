@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/layout",
+    "crates/memory",
 ]
 resolver = "2"
 
