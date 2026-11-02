@@ -1,0 +1,52 @@
+# BWRAPI
+
+> BWAPI for StarCraft: Remastered 1.23.10 (x64 and x86 games): a library for reading the game state and issuing commands. It provides the BWAPI 4.4 API (C++ through the official BWAPI 4.4 SDK, Python through `bwrapi.bwapi`), a lower-level C ABI 1.0 (`bwrapi.dll`, with .NET and Python bindings), and a launcher that injects BWRAPI into a running game and starts bots. Windows only.
+
+This file is for AI coding agents writing code that uses BWRAPI. Agents changing BWRAPI itself read AGENTS.md (Korean) instead.
+
+## Prerequisites
+
+- Windows 10/11 x64, StarCraft: Remastered 1.23.10 installed and running. The user starts the game and opens a match (for a bot, a custom game against the computer); there is no auto-menu. Another game build returns status UNSUPPORTED_BUILD.
+- Python 3.11+ (x64): `pip install bwrapi`. C/C++ without Python: `bwrapi-windows.zip` from https://github.com/moccohello/bwrapi/releases (header, x64/x86 `bwrapi.dll` and `bwrapi.lib`, injector, examples). .NET: `BwrApi.Client.1.0.0.nupkg` from the same page.
+
+## Pick the path
+
+- Python bot (BWAPI 4.4 API): subclass `bwrapi.bwapi.AIModule`, use `Broodwar`; run `python -m bwrapi.bwapi.run bot.py --inject`. [Python SDK guide](https://github.com/moccohello/bwrapi/blob/main/docs/SDK.md), [example](https://github.com/moccohello/bwrapi/blob/main/python/examples/bot.py).
+- Existing or new C++ BWAPI 4.4 bot: an x86 AIModule DLL built against BWAPI 4.4.0; run `python -m bwrapi.launcher run <bot>.dll`. [Write a bot in C++](https://github.com/moccohello/bwrapi#write-a-bot-in-c).
+- HUD, overlay or analysis tool (read only): C ABI `bwr_open(pid, 0, &s)` from your own process, no injection. [C ABI reference](https://github.com/moccohello/bwrapi/blob/main/docs/C-ABI.md), [C example](https://github.com/moccohello/bwrapi/blob/main/crates/ffi/examples/read_units.c), [.NET example](https://github.com/moccohello/bwrapi/blob/main/dotnet/examples/ObserverQuickstart/Program.cs). Python: `bwrapi.native` (section 6 of the SDK guide).
+- Commands without the BWAPI layer: inject `bwrapi.dll` (`bwrapi-inject <pid> <dir>\bwrapi.dll`, or any launcher command), then `bwr_submit` / `bwr_poll_result` from your own process. [Example](https://github.com/moccohello/bwrapi/blob/main/crates/ffi/examples/submit_move.c).
+- Drawing (`bwr_draw`) and chat capture (`bwr_capture_chat`) work only in a module running inside the game (`bwr_open_self`): [In-game modules](https://github.com/moccohello/bwrapi/blob/main/docs/C-ABI.md#in-game-modules).
+
+## Verify it works
+
+Without a game, you can check only that code imports, names resolve (`help()`, the `.pyi` stubs, a type checker such as pyright, or compiling against `bwrapi.h`), and that errors are handled (a nonexistent pid gives status GONE). Everything else needs a running game:
+
+- `python -m bwrapi.launcher doctor <bot>` checks files and lists running games with their PIDs and bit widths.
+- Server log `bwrapi_bwapi.log` next to the injected server DLL (pip install: `<site-packages>\bwrapi\bin\x64\` or `x86\`); a connected bot logs `client connected mode=sync|async`.
+- A bot that draws in `onFrame` shows the text on the game screen.
+
+Only attach to a game the user asked you to use: a reader or bot acts on the running StarCraft they may be playing.
+
+## Pitfalls
+
+- AIModule callbacks: `onStart(self)`, `onFrame(self)`, `onEnd(self, isWinner)`, `onUnitCreate(self, unit)` and the other `onUnit*`, `onSendText(self, text)`, `onReceiveText(self, player, text)`, `onPlayerLeft(self, player)`, `onNukeDetect(self, target)`, `onSaveGame(self, gameName)`.
+- Python `bwrapi.bwapi.run` without `--inject` waits for a server that someone else injected.
+- Sync mode (default) freezes the game while the bot's `onFrame` runs; keep it short or use `--mode async`.
+- A BWAPI command returning true means it was handed to the game, not that it took effect; check later frames. The C ABI returns command results (`bwr_poll_result`).
+- `Broodwar` is usable only while a client is connected to a server; units, players and regions exist from the match start (`onStart`).
+- "None" values are `None_` on the type namespaces (e.g. `UnitTypes.None_`, `Positions.None_`).
+- `supplyUsed()` and `supplyTotal()` are in half units, as in BWAPI, so divide by 2 to show them.
+- C ABI cells are raw game values: hit points, shields and energy are in 1/256 units, and supply in half units; unknown cells are the type's sentinel (max for unsigned, min for signed). A table that was not read is NULL. Check the C ABI reference for each column.
+- C ABI frames stay valid until `bwr_release`; use a session from one thread. Loop: `bwr_step` (wait) then `bwr_acquire`, read, `bwr_release`.
+- C++ AIModule DLLs and BWAPI client programs must be x86 binaries.
+- Differences from BWAPI 4.4 behavior: [compatibility notes](https://github.com/moccohello/bwrapi/blob/main/docs/BWAPI-COMPATIBILITY.md).
+
+## Docs
+
+- [README](https://github.com/moccohello/bwrapi/blob/main/README.md): overview and quick start
+- [Python SDK guide](https://github.com/moccohello/bwrapi/blob/main/docs/SDK.md): Python BWAPI API, Python differences, C ABI binding
+- [C ABI reference](https://github.com/moccohello/bwrapi/blob/main/docs/C-ABI.md): functions, status codes, sources and columns, commands, in-game modules
+- [Compatibility notes](https://github.com/moccohello/bwrapi/blob/main/docs/BWAPI-COMPATIBILITY.md): what matches BWAPI 4.4 and what differs
+- [Launcher guide](https://github.com/moccohello/bwrapi/blob/main/python/bwrapi/launcher/README.md): launcher commands and product settings
+- [.NET binding](https://github.com/moccohello/bwrapi/blob/main/dotnet/BwrApi.Client/README.md)
+- [BWAPI documentation](https://bwapi.github.io/): names and semantics of the BWAPI 4.4 API
