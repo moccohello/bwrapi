@@ -1,0 +1,16 @@
+[package]
+name = "bwrapi-engine"
+version = "1.0.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+bwrapi-layout = { path = "../layout" }
+bwrapi-internal-model = { path = "../bwrapi-internal-model" }
+bwrapi-memory = { path = "../memory" }
+
+[features]
+# Exposes the in-memory fake game process to tests of dependent crates.
+test-support = []

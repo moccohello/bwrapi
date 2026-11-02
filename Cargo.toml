@@ -3,6 +3,7 @@ members = [
     "crates/bwrapi-internal-model",
     "crates/layout",
     "crates/memory",
+    "crates/engine",
 ]
 resolver = "2"
 
