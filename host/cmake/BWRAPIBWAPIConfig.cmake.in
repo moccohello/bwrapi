@@ -1,0 +1,44 @@
+@PACKAGE_INIT@
+
+set(BWRAPIBWAPI_PROFILE_REGISTRY
+    "${PACKAGE_PREFIX_DIR}/share/BWRAPIBWAPI/profiles/compatibility-profiles.json"
+)
+set(BWRAPIBWAPI_PYTHON_PATH
+    "${PACKAGE_PREFIX_DIR}/share/BWRAPIBWAPI/python"
+)
+
+if(NOT WIN32)
+    message(FATAL_ERROR
+        "BWRAPIBWAPI::BWAPI44 is the official BWAPI 4.4 Windows x86 SDK and cannot be used on this platform.")
+endif()
+if(NOT DEFINED CMAKE_SIZEOF_VOID_P OR NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
+    message(FATAL_ERROR
+        "BWRAPIBWAPI::BWAPI44 requires a Win32/x86 consumer because BWAPILIB.lib is the official BWAPI 4.4 x86 ABI.")
+endif()
+
+set(BWRAPIBWAPI_BWAPI44_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/include")
+set(BWRAPIBWAPI_BWAPI44_LIBRARY "${PACKAGE_PREFIX_DIR}/lib/BWAPILIB.lib")
+if(NOT EXISTS "${BWRAPIBWAPI_BWAPI44_INCLUDE_DIR}/BWAPI.h")
+    message(FATAL_ERROR "BWRAPIBWAPI official BWAPI 4.4 headers are missing from this installation.")
+endif()
+if(NOT EXISTS "${BWRAPIBWAPI_BWAPI44_LIBRARY}")
+    message(FATAL_ERROR "BWRAPIBWAPI official BWAPI 4.4 Win32 library is missing from this installation.")
+endif()
+
+add_library(BWRAPIBWAPI::BWAPI44 STATIC IMPORTED)
+set_target_properties(BWRAPIBWAPI::BWAPI44 PROPERTIES
+    IMPORTED_LOCATION "${BWRAPIBWAPI_BWAPI44_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${BWRAPIBWAPI_BWAPI44_INCLUDE_DIR}"
+    INTERFACE_COMPILE_DEFINITIONS "BWRAPIBWAPI_BWAPI44_WIN32_X86=1"
+    BWRAPIBWAPI_BWAPI_ABI "bwapi-4.4-win32-x86"
+)
+
+if(EXISTS "${PACKAGE_PREFIX_DIR}/lib/BWAPIClient.lib")
+    add_library(BWRAPIBWAPI::BWAPI44Client STATIC IMPORTED)
+    set_target_properties(BWRAPIBWAPI::BWAPI44Client PROPERTIES
+        IMPORTED_LOCATION "${PACKAGE_PREFIX_DIR}/lib/BWAPIClient.lib"
+        INTERFACE_LINK_LIBRARIES BWRAPIBWAPI::BWAPI44
+    )
+endif()
+
+check_required_components(BWRAPIBWAPI)
