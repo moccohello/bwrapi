@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "crates/layout",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+publish = false
+rust-version = "1.88"
+
+[profile.release]
+strip = true

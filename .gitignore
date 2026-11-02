@@ -1,0 +1,48 @@
+# 합치지 않는 작업 공간
+/malco/
+/bwrapi-ai/
+
+# 환경·생성물
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.build/
+build/
+dist/
+wheels/
+target/
+artifacts/
+bin/
+obj/
+logs/
+temp/
+.tmp/
+*.nupkg
+*.dll
+*.dmp
+*.obj
+*.pdb
+*.user
+*.suo
+*.VC.db
+*.ipch
+out/
+
+# 에이전트·편집기 로컬 상태
+.agents/
+.codex/
+.codex-remote-attachments/
+wsl$/
+
+# 로컬 생성·메모
+python/bwrapi/_native.py
+python/bwrapi/bin/
+tools/memory-map/memory-map.json
+docs/handoff-*.md
+python/bwrapi/launcher/external/
+python/bwrapi/launcher/reports/
+
+# 에이전트 도구 설정
+.zcodeignore
