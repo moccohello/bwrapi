@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bwrapi"
+dynamic = ["version"]
+description = "BWAPI for StarCraft: Remastered: the BWAPI 4.4 API in Python, C ABI 1.0 bindings for game state and commands, and a launcher"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT AND LGPL-3.0-only"
+authors = [{ name = "BWRAPI" }]
+keywords = ["starcraft", "brood war", "remastered", "bwapi", "bot", "ai"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Games/Entertainment :: Real Time Strategy",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/moccohello/bwrapi"
+Documentation = "https://github.com/moccohello/bwrapi#readme"
+Issues = "https://github.com/moccohello/bwrapi/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "bwrapi._generated.version.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["bwrapi*"]
+
+[tool.setuptools.package-data]
+# bin: what cargo xtask package puts in the per-width folders (x64, x86): bwrapi.dll, bwrapi-inject.exe,
+# the in-game BWAPI server, the x86 loaders, and their license and notices.
+bwrapi = ["py.typed", "bin/*/*.dll", "bin/*/*.exe", "bin/LICENSE", "bin/THIRD_PARTY_NOTICES.md"]
+"bwrapi.bwapi" = ["py.typed", "*.pyi", "*.json"]
+"bwrapi.launcher" = ["products.sample.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.distutils.bdist_wheel]
+plat-name = "win_amd64"

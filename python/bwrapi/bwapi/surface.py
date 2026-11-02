@@ -1,0 +1,525 @@
+from __future__ import annotations
+
+from types import MappingProxyType
+from typing import Mapping
+
+
+BWAPI_GAME_METHODS = tuple(
+    """
+    allies
+    canBuildHere
+    canMake
+    canResearch
+    canUpgrade
+    countdownTimer
+    elapsedTime
+    enableFlag
+    enemies
+    enemy
+    getAllRegions
+    getAllUnits
+    getAPM
+    getAverageFPS
+    getBestUnit
+    getBuildLocation
+    getBullets
+    getClientVersion
+    getClosestUnit
+    getClosestUnitInRectangle
+    getDamageFrom
+    getDamageTo
+    getEvents
+    getForce
+    getForces
+    getFPS
+    getFrameCount
+    getGameType
+    getGeysers
+    getGroundHeight
+    getInstanceNumber
+    getKeyState
+    getLastError
+    getLastEventTime
+    getLatency
+    getLatencyFrames
+    getLatencyTime
+    getMinerals
+    getMousePosition
+    getMouseState
+    getNeutralUnits
+    getNukeDots
+    getPlayer
+    getPlayers
+    getRandomSeed
+    getRegion
+    getRegionAt
+    getRemainingLatencyFrames
+    getRemainingLatencyTime
+    getReplayFrameCount
+    getRevision
+    getScreenPosition
+    getSelectedUnits
+    getStartLocations
+    getStaticGeysers
+    getStaticMinerals
+    getStaticNeutralUnits
+    getUnit
+    getUnitsInRadius
+    getUnitsInRectangle
+    getUnitsOnTile
+    hasCreep
+    hasPath
+    hasPower
+    hasPowerPrecise
+    indexToUnit
+    isBattleNet
+    isBuildable
+    isDebug
+    isExplored
+    isFlagEnabled
+    isGUIEnabled
+    isInGame
+    isLatComEnabled
+    isMultiplayer
+    isPaused
+    isReplay
+    issueCommand
+    isVisible
+    isWalkable
+    leaveGame
+    mapFileName
+    mapHash
+    mapHeight
+    mapName
+    mapPathName
+    mapWidth
+    neutral
+    observers
+    pauseGame
+    pingMinimap
+    printf
+    restartGame
+    resumeGame
+    self
+    sendText
+    sendTextEx
+    setAlliance
+    setCommandOptimizationLevel
+    setFrameSkip
+    setGUI
+    setLastError
+    setLatCom
+    setLocalSpeed
+    setMap
+    setRevealAll
+    setScreenPosition
+    setVision
+    vPrintf
+    vSendText
+    vSendTextEx
+    setTextSize
+    vDrawText
+    drawText
+    drawTextMap
+    drawTextMouse
+    drawTextScreen
+    drawBox
+    drawBoxMap
+    drawBoxMouse
+    drawBoxScreen
+    drawTriangle
+    drawTriangleMap
+    drawTriangleMouse
+    drawTriangleScreen
+    drawCircle
+    drawCircleMap
+    drawCircleMouse
+    drawCircleScreen
+    drawEllipse
+    drawEllipseMap
+    drawEllipseMouse
+    drawEllipseScreen
+    drawDot
+    drawDotMap
+    drawDotMouse
+    drawDotScreen
+    drawLine
+    drawLineMap
+    drawLineMouse
+    drawLineScreen
+    """.split()
+)
+
+
+BWAPI_PLAYER_METHODS = tuple(
+    """
+    allUnitCount
+    armor
+    completedUnitCount
+    damage
+    deadUnitCount
+    gas
+    gatheredGas
+    gatheredMinerals
+    getBuildingScore
+    getColor
+    getCustomScore
+    getForce
+    getID
+    getKillScore
+    getMaxUpgradeLevel
+    getName
+    getRace
+    getRazingScore
+    getStartLocation
+    getTextColor
+    getType
+    getUnits
+    getUnitScore
+    getUpgradeLevel
+    hasResearched
+    hasUnitTypeRequirement
+    incompleteUnitCount
+    isAlly
+    isDefeated
+    isEnemy
+    isNeutral
+    isObserver
+    isResearchAvailable
+    isResearching
+    isUnitAvailable
+    isUpgrading
+    isVictorious
+    killedUnitCount
+    leftGame
+    maxEnergy
+    minerals
+    refundedGas
+    refundedMinerals
+    repairedGas
+    repairedMinerals
+    sightRange
+    spentGas
+    spentMinerals
+    supplyTotal
+    supplyUsed
+    topSpeed
+    visibleUnitCount
+    weaponDamageCooldown
+    weaponMaxRange
+    """.split()
+)
+
+
+BWAPI_UNIT_METHODS = tuple(
+    """
+    exists
+    getAcidSporeCount
+    getAddon
+    getAirWeaponCooldown
+    getAngle
+    getBottom
+    getBuildType
+    getBuildUnit
+    getCarrier
+    getClosestUnit
+    getDefenseMatrixPoints
+    getDefenseMatrixTimer
+    getDistance
+    getEnergy
+    getEnsnareTimer
+    getGroundWeaponCooldown
+    getHatchery
+    getHitPoints
+    getID
+    getInitialHitPoints
+    getInitialPosition
+    getInitialResources
+    getInitialTilePosition
+    getInitialType
+    getInterceptorCount
+    getInterceptors
+    getIrradiateTimer
+    getKillCount
+    getLarva
+    getLastAttackingPlayer
+    getLastCommand
+    getLastCommandFrame
+    getLeft
+    getLoadedUnits
+    getLockdownTimer
+    getMaelstromTimer
+    getNydusExit
+    getOrder
+    getOrderTarget
+    getOrderTargetPosition
+    getOrderTimer
+    getPlagueTimer
+    getPlayer
+    getPosition
+    getPowerUp
+    getRallyPosition
+    getRallyUnit
+    getRegion
+    getRemainingBuildTime
+    getRemainingResearchTime
+    getRemainingTrainTime
+    getRemainingUpgradeTime
+    getRemoveTimer
+    getReplayID
+    getResourceGroup
+    getResources
+    getRight
+    getScarabCount
+    getSecondaryOrder
+    getShields
+    getSpaceRemaining
+    getSpellCooldown
+    getSpiderMineCount
+    getStasisTimer
+    getStimTimer
+    getTarget
+    getTargetPosition
+    getTech
+    getTilePosition
+    getTop
+    getTrainingQueue
+    getTransport
+    getType
+    getUnitsInRadius
+    getUnitsInWeaponRange
+    getUpgrade
+    getVelocityX
+    getVelocityY
+    hasNuke
+    hasPath
+    isAccelerating
+    isAttackFrame
+    isAttacking
+    isBeingConstructed
+    isBeingGathered
+    isBeingHealed
+    isBlind
+    isBraking
+    isBurrowed
+    isCarryingGas
+    isCarryingMinerals
+    isCloaked
+    isCompleted
+    isConstructing
+    isDefenseMatrixed
+    isDetected
+    isEnsnared
+    isFlying
+    isFollowing
+    isGatheringGas
+    isGatheringMinerals
+    isHallucination
+    isHoldingPosition
+    isIdle
+    isInterruptible
+    isInvincible
+    isInWeaponRange
+    isIrradiated
+    isLifted
+    isLoaded
+    isLockedDown
+    isMaelstrommed
+    isMorphing
+    isMoving
+    isParasited
+    isPatrolling
+    isPlagued
+    isPowered
+    isRepairing
+    isResearching
+    isSelected
+    isSieged
+    isStartingAttack
+    isStasised
+    isStimmed
+    isStuck
+    isTargetable
+    isTraining
+    isUnderAttack
+    isUnderDarkSwarm
+    isUnderDisruptionWeb
+    isUnderStorm
+    isUpgrading
+    isVisible
+    issueCommand
+    attack
+    build
+    buildAddon
+    train
+    morph
+    research
+    upgrade
+    setRallyPoint
+    move
+    patrol
+    holdPosition
+    stop
+    follow
+    gather
+    returnCargo
+    repair
+    burrow
+    unburrow
+    cloak
+    decloak
+    siege
+    unsiege
+    lift
+    land
+    load
+    unload
+    unloadAll
+    rightClick
+    haltConstruction
+    cancelConstruction
+    cancelAddon
+    cancelTrain
+    cancelMorph
+    cancelResearch
+    cancelUpgrade
+    useTech
+    placeCOP
+    canIssueCommand
+    canIssueCommandGrouped
+    canCommand
+    canCommandGrouped
+    canIssueCommandType
+    canIssueCommandTypeGrouped
+    canTargetUnit
+    canAttack
+    canAttackGrouped
+    canAttackMove
+    canAttackMoveGrouped
+    canAttackUnit
+    canAttackUnitGrouped
+    canBuild
+    canBuildAddon
+    canTrain
+    canMorph
+    canResearch
+    canUpgrade
+    canSetRallyPoint
+    canSetRallyPosition
+    canSetRallyUnit
+    canMove
+    canMoveGrouped
+    canPatrol
+    canPatrolGrouped
+    canFollow
+    canGather
+    canReturnCargo
+    canHoldPosition
+    canStop
+    canRepair
+    canBurrow
+    canUnburrow
+    canCloak
+    canDecloak
+    canSiege
+    canUnsiege
+    canLift
+    canLand
+    canLoad
+    canUnloadWithOrWithoutTarget
+    canUnloadAtPosition
+    canUnload
+    canUnloadAll
+    canUnloadAllPosition
+    canRightClick
+    canRightClickGrouped
+    canRightClickPosition
+    canRightClickPositionGrouped
+    canRightClickUnit
+    canRightClickUnitGrouped
+    canHaltConstruction
+    canCancelConstruction
+    canCancelAddon
+    canCancelTrain
+    canCancelTrainSlot
+    canCancelMorph
+    canCancelResearch
+    canCancelUpgrade
+    canUseTechWithOrWithoutTarget
+    canUseTech
+    canUseTechWithoutTarget
+    canUseTechUnit
+    canUseTechPosition
+    canPlaceCOP
+    """.split()
+)
+
+
+BWAPI_AIMODULE_METHODS = tuple(
+    """
+    onEnd
+    onFrame
+    onNukeDetect
+    onPlayerLeft
+    onReceiveText
+    onSaveGame
+    onSendText
+    onStart
+    onUnitComplete
+    onUnitCreate
+    onUnitDestroy
+    onUnitDiscover
+    onUnitEvade
+    onUnitHide
+    onUnitMorph
+    onUnitRenegade
+    onUnitShow
+    """.split()
+)
+
+
+BWAPI_BULLET_METHODS = (
+    "exists",
+    "getAngle",
+    "getID",
+    "getPlayer",
+    "getPosition",
+    "getRemoveTimer",
+    "getSource",
+    "getTarget",
+    "getTargetPosition",
+    "getType",
+    "getVelocityX",
+    "getVelocityY",
+    "isVisible",
+)
+
+
+BWAPI_SURFACE_METHODS: Mapping[str, tuple[str, ...]] = MappingProxyType(
+    {
+        "Bullet": BWAPI_BULLET_METHODS,
+        "Game": BWAPI_GAME_METHODS,
+        "Player": BWAPI_PLAYER_METHODS,
+        "Unit": BWAPI_UNIT_METHODS,
+        "AIModule": BWAPI_AIMODULE_METHODS,
+    }
+)
+
+BWAPI_TYPE_METHODS = MappingProxyType({
+    "Type": ('c_str', 'getID', 'getName', 'getType', 'isValid', 'toString'),
+    "UnitType": ('abilities', 'acceleration', 'airWeapon', 'armor', 'armorUpgrade', 'buildScore', 'buildTime', 'buildsWhat', 'c_str', 'canAttack', 'canBuildAddon', 'canMove', 'canProduce', 'cloakingTech', 'destroyScore', 'dimensionDown', 'dimensionLeft', 'dimensionRight', 'dimensionUp', 'gasPrice', 'getID', 'getName', 'getRace', 'getType', 'groundWeapon', 'haltDistance', 'hasPermanentCloak', 'height', 'isAddon', 'isBeacon', 'isBuilding', 'isBurrowable', 'isCloakable', 'isCritter', 'isDetector', 'isFlagBeacon', 'isFlyer', 'isFlyingBuilding', 'isHero', 'isInvincible', 'isMechanical', 'isMineralField', 'isNeutral', 'isOrganic', 'isPowerup', 'isRefinery', 'isResourceContainer', 'isResourceDepot', 'isRobotic', 'isSpecialBuilding', 'isSpell', 'isSpellcaster', 'isSuccessorOf', 'isTwoUnitsInOneEgg', 'isValid', 'isWorker', 'maxAirHits', 'maxEnergy', 'maxGroundHits', 'maxHitPoints', 'maxShields', 'mineralPrice', 'producesCreep', 'producesLarva', 'regeneratesHP', 'requiredTech', 'requiredUnits', 'requiresCreep', 'requiresPsi', 'researchesWhat', 'seekRange', 'sightRange', 'size', 'spaceProvided', 'spaceRequired', 'supplyProvided', 'supplyRequired', 'tileHeight', 'tileSize', 'tileWidth', 'toString', 'topSpeed', 'turnRadius', 'upgrades', 'upgradesWhat', 'whatBuilds', 'width'),
+    "TechType": ('c_str', 'energyCost', 'gasPrice', 'getID', 'getName', 'getOrder', 'getRace', 'getType', 'getWeapon', 'isValid', 'mineralPrice', 'requiredUnit', 'researchTime', 'targetsPosition', 'targetsUnit', 'toString', 'whatResearches', 'whatUses'),
+    "UpgradeType": ('c_str', 'gasPrice', 'gasPriceFactor', 'getID', 'getName', 'getRace', 'getType', 'isValid', 'maxRepeats', 'mineralPrice', 'mineralPriceFactor', 'toString', 'upgradeTime', 'upgradeTimeFactor', 'whatUpgrades', 'whatUses', 'whatsRequired'),
+    "WeaponType": ('c_str', 'damageAmount', 'damageBonus', 'damageCooldown', 'damageFactor', 'damageType', 'explosionType', 'getID', 'getName', 'getTech', 'getType', 'innerSplashRadius', 'isValid', 'maxRange', 'medianSplashRadius', 'minRange', 'outerSplashRadius', 'targetsAir', 'targetsGround', 'targetsMechanical', 'targetsNonBuilding', 'targetsNonRobotic', 'targetsOrgOrMech', 'targetsOrganic', 'targetsOwn', 'targetsTerrain', 'toString', 'upgradeType', 'whatUses'),
+    "Race": ('c_str', 'getCenter', 'getID', 'getName', 'getRefinery', 'getResourceDepot', 'getSupplyProvider', 'getTransport', 'getType', 'getWorker', 'isValid', 'toString'),
+    "PlayerType": ('c_str', 'getID', 'getName', 'getType', 'isGameType', 'isLobbyType', 'isValid', 'toString'),
+    "GameType": ('c_str', 'getID', 'getName', 'getType', 'isValid', 'toString'),
+    "DamageType": ('c_str', 'getID', 'getName', 'getType', 'isValid', 'toString'),
+    "ExplosionType": ('c_str', 'getID', 'getName', 'getType', 'isValid', 'toString'),
+    "UnitSizeType": ('c_str', 'getID', 'getName', 'getType', 'isValid', 'toString'),
+    "BulletType": ('c_str', 'getID', 'getName', 'getType', 'isValid', 'toString'),
+    "Error": ('c_str', 'getID', 'getName', 'getType', 'isValid', 'toString'),
+    "Order": ('c_str', 'getID', 'getName', 'getType', 'isValid', 'toString'),
+    "UnitCommandType": ('c_str', 'getID', 'getName', 'getType', 'isValid', 'toString'),
+    "Color": ('blue', 'c_str', 'getID', 'getName', 'getType', 'green', 'isValid', 'red', 'toString'),
+})

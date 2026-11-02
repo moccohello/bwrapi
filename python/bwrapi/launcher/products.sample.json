@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "products": [
+    {
+      "product_id": "sample-bwapi-ai",
+      "module": "C:\\Bots\\bot.dll"
+    },
+    {
+      "product_id": "sample-bwapi-client",
+      "entrypoint": "client"
+    },
+    {
+      "product_id": "sample-bwapi-tournament",
+      "entrypoint": "tournament",
+      "module": "C:\\Bots\\bot.dll",
+      "tournament_module": "C:\\Bots\\tournament.dll"
+    }
+  ]
+}
