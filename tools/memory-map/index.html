@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BWRAPI · 메모리 지도</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">▦</span><div><strong>BWRAPI <span>메모리 지도</span></strong><small>원천의 위치, 의미, 근거를 탐색합니다</small></div></div>
+  <div class="top-actions"><button id="sync-mode" class="sync-state" title="원본 장부와의 자동 연결 상태">장부 연결 중</button><button id="open-json">JSON 열기</button><input id="file-input" type="file" accept=".json,application/json" hidden></div>
+</header>
+<div class="app">
+  <aside class="sidebar">
+    <div class="side-title">원천 분류 <button id="reset" class="text-button">초기화</button></div>
+    <nav id="category-tree" aria-label="원천 분류 트리"></nav>
+    <div class="sidebar-note"><span class="tiny-label">색상은 완료율이 아닙니다</span><p>초록도 API 완성을 뜻하지 않습니다. 선택한 색상 기준과 범례를 확인하세요.</p><p>게임의 실시간 값이 아니라 조사 장부를 보여줍니다.</p><button id="scope-button" class="text-button">데이터 범위·출처 보기 ↗</button></div>
+  </aside>
+  <main>
+    <div class="page-heading"><div><div class="eyebrow">게임 정보 탐색</div><h1 id="heading">전체 게임 정보</h1><p id="group-description">데이터를 불러오는 중입니다.</p><p id="dataset-info"></p></div><button id="export-filtered" title="현재 검색 결과를 CSV로 저장">목록 내보내기 ↓</button></div>
+    <div class="search-row"><label class="search-box"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="이름, 주소, 의미, 근거를 검색…" aria-label="원천 검색"><kbd>/</kbd></label><select id="filter" aria-label="미확인 상태 필터"><option value="all">모든 상태</option><option value="unknown">위치 미상</option><option value="candidate">위치 후보</option><option value="meaning">의미 미확정</option><option value="no-evidence">근거 미기록</option><option value="questions">남은 조사 질문</option></select></div>
+    <div id="summary" class="summary" aria-live="polite"></div>
+    <div class="viewbar"><div class="tabs" role="tablist" aria-label="지도 표현"><button role="tab" id="tab-treemap" aria-selected="true" data-view="treemap">▦ 분류 트리맵</button><button role="tab" id="tab-address" aria-selected="false" data-view="address">▤ 주소 배치</button><button role="tab" id="tab-relations" aria-selected="false" data-view="relations">⌘ 관계 지도</button><button role="tab" id="tab-list" aria-selected="false" data-view="list">☷ 전체 목록</button></div><label id="color-control">색상 <select id="color-by" aria-label="색상 기준"><option value="location">위치 상태</option><option value="meaning">의미 상태</option><option value="evidence">근거 종류</option></select></label></div>
+    <div id="view-caption" class="view-caption"></div>
+    <div id="legend" class="legend"></div>
+    <p id="color-help" class="color-help"></p>
+    <section id="visual" class="visual" aria-label="메모리 지도"></section>
+    <footer><span id="footer-count"></span><span>필수 입력 목록이 고정되지 않아 전체 완성률은 계산하지 않습니다.</span></footer>
+  </main>
+  <aside id="detail" class="detail" aria-label="선택한 원천의 상세 정보"><div class="detail-empty"><span>◎</span><h2>원천 하나를 선택하세요</h2><p>타일이나 필드를 누르면 주소 기준, 해석, 미확인 사항과 원문 근거를 볼 수 있습니다.</p></div></aside>
+</div>
+<dialog id="scope-dialog"><div class="dialog-heading"><h2>데이터 범위와 출처</h2><button id="close-scope" aria-label="닫기">✕</button></div><div id="scope-content"></div></dialog>
+<div id="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>

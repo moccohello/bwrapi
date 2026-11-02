@@ -1,0 +1,3016 @@
+{
+  "schema_version": 1,
+  "target": "StarCraft: Remastered Windows x64",
+  "memory_map_questions": [
+    {
+      "id": "chat_receive",
+      "label": "수신 채팅의 발신자·내용·발생 시점",
+      "group": "functions",
+      "meaning": "받은 채팅은 frame 경계에서 게임의 리플레이 기록 버퍼를 걷는 기록기 파서가 보낸 플레이어 번호와 글로 읽어 chat 큐에 넣는다. BWAPI server가 그 큐를 onReceiveText로 전달한다.",
+      "limits": "실게임 미확인. 다른 사람 player가 있는 멀티플레이 경기에서 발신자 번호·문자열·frame을 대조해야 한다.",
+      "evidence": "crates/engine/src/recorder.rs, crates/game/src/chat.rs",
+      "state": "open"
+    },
+    {
+      "id": "chat_send",
+      "label": "사용자 채팅 전송 시도",
+      "group": "functions",
+      "meaning": "채팅 상자가 열려 있는 동안(chat_box_mode가 0이 아님) 사용자가 입력한 줄을 대화상자의 텍스트 컨트롤에서 읽고, 상자를 Escape처럼 닫아 게임이 보내지 않게 한 뒤 chat 큐로 낸다. chat_box_mode의 범위 값(전체·동맹 등)은 이 경로에서 전달하지 않는다.",
+      "limits": "범위 값 2(전체)·3(동맹)·4·5의 경로는 멀티플레이가 필요해 미확인이다. API 송신 명령의 수락은 상대 수신 완료와 구분한다.",
+      "state": "validated",
+      "evidence": "crates/game/src/chat.rs"
+    },
+    {
+      "id": "economy_start",
+      "label": "경기 시작 경제 누계 기준점",
+      "group": "player",
+      "meaning": "수리·환불 합계는 Layout `resource_writes`의 명령 주소에서 게임 안 vectored 예외 처리기가 세어 players 표의 열로 낸다. 감시는 경기가 도는 동안에만 켜져 있다.",
+      "limits": "연구·업그레이드 취소 환불은 실게임 미확인.",
+      "evidence": "crates/game/src/resources.rs, crates/layout/src/lib.rs",
+      "state": "validated"
+    }
+  ],
+  "ledger_scope": {
+    "profile": "현재 판 식별과 RVA: crates/layout/src/lib.rs의 Layout::X64·Layout::X86",
+    "build_fingerprint": "빌드 fingerprint는 이 장부에 두지 않는다. 판 식별과 원본 바이트 고정은 source profile이 맡는다",
+    "session": "process·session 식별자는 두지 않는다",
+    "reuse": "같은 profile·빌드에서만 값을 재사용하고, 어긋남이 보이면 다시 확인한다",
+    "width": "이 장부의 주소와 offset은 x64 기준이다. x86 값은 `Layout::X86`에만 있다"
+  },
+  "address_basis": {
+    "module_relative": "StarCraft.exe module base",
+    "bwgame_relative": "runtime-selected BWGame root",
+    "record_relative": "validated record base",
+    "absolute_process_address": "not_persisted"
+  },
+  "status": {
+    "validated": "현재 source가 읽거나 쓰며 확인한 값",
+    "candidate": "진단용 후보. 제품 값으로 공개하지 않음",
+    "static": "저장 이미지의 정적 분석으로만 매핑한 주소·함수. 실행 값은 미확인"
+  },
+  "source_files": {
+    "globals": "crates/layout/src/lib.rs",
+    "bwgame": "crates/engine/src/decode/bwgame.rs",
+    "cunit": "crates/engine/src/decode/cunit/constants.rs",
+    "cunit_pattern": "crates/layout/src/lib.rs",
+    "bullet": "crates/layout/src/lib.rs",
+    "map": "crates/engine/src/decode/map.rs",
+    "selection": "crates/engine/src/read/orders.rs",
+    "command": "crates/game/src/commands.rs",
+    "command_profile": "crates/layout/src/lib.rs"
+  },
+  "module_relative": {
+    "cunit_array_pointer": {
+      "offset": "0xE78060",
+      "type": "pointer64",
+      "status": "validated",
+      "meaning": "첫 CUnit 슬롯 +0x10; 영역 base는 pointer-0x10"
+    },
+    "unit_type_to_flingy_id_table": {
+      "offset": "0xE58790",
+      "type": "u8 indexed by native unit type",
+      "status": "candidate",
+      "meaning": "게임 이동속도 계산에서 unit type -> flingy ID 조회",
+      "limits": "저장 이미지의 이 위치 32B는 0; 런타임 표값과 writer 미관측"
+    },
+    "flingy_base_speed_table": {
+      "offset": "0xE42E80",
+      "type": "u32 indexed by flingy ID",
+      "status": "candidate",
+      "meaning": "게임 이동속도 계산의 기본 raw 속도, 반환 변환은 /256",
+      "limits": "저장 이미지의 이 위치 32B는 0; 실제 로드 표값 미관측"
+    },
+    "flingy_base_acceleration_table": {
+      "offset": "0xE431D0",
+      "type": "u16 indexed by flingy ID",
+      "status": "candidate",
+      "meaning": "게임의 상태 반영 전 기본 가속도",
+      "limits": "실제 로드 표값 미관측"
+    },
+    "flingy_base_turn_table": {
+      "offset": "0xE436D0",
+      "type": "u8 indexed by flingy ID",
+      "status": "candidate",
+      "meaning": "게임의 상태 반영 전 기본 회전값",
+      "limits": "실제 로드 표값 미관측"
+    },
+    "flingy_dat_descriptor_array": {
+      "offset": "0xDA9000",
+      "type": "inline records stride0x18; destination VA u64 +0, width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "flingy DAT 로딩 descriptor",
+      "limits": "무기 descriptor와 실제 같은 로더 경로로 확인. 로드 값·미명명 표 공식 의미 미관측"
+    },
+    "flingy_dat_word_e42cd0": {
+      "offset": "0xE42CD0",
+      "type": "u16[209]",
+      "status": "candidate",
+      "meaning": "flingy DAT 미명명 word 배열",
+      "limits": "공식 필드명·실제 로드값·후속 게임 의미 미확정"
+    },
+    "flingy_dat_dword_e43380": {
+      "offset": "0xE43380",
+      "type": "u32[209]",
+      "status": "candidate",
+      "meaning": "flingy DAT 미명명 dword 배열",
+      "limits": "객체+0x3C의 정확한 범위·공식 필드명·단위·실제 로드값/효과 미확정"
+    },
+    "flingy_dat_byte_e43890": {
+      "offset": "0xE43890",
+      "type": "u8[209]",
+      "status": "candidate",
+      "meaning": "flingy DAT 미명명 byte 배열",
+      "limits": "공식 필드명·실제 로드값·게임 효과 미확정"
+    },
+    "flingy_dat_byte_e437b0": {
+      "offset": "0xE437B0",
+      "type": "u8[209]",
+      "status": "candidate",
+      "meaning": "flingy DAT 미명명 byte 배열의 위치·형태",
+      "limits": "직접 소비·공식 필드명·실제 로드값/게임 효과 미확인"
+    },
+    "sprites_dat_descriptor_array": {
+      "offset": "0xDA95D0",
+      "type": "inline records stride0x18; destination VA u64 +0, width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "sprites DAT 로딩 descriptor.",
+      "limits": "실제 로드값·미명명 표 공식 의미/게임 효과 미관측"
+    },
+    "sprites_dat_word_e57720": {
+      "offset": "0xE57720",
+      "type": "u16[517]",
+      "status": "candidate",
+      "meaning": "sprites DAT 미명명 word 배열",
+      "limits": "공식 필드명·단위·실제 로드값/게임 효과 미확정"
+    },
+    "sprites_dat_byte_e57ed0": {
+      "offset": "0xE57ED0",
+      "type": "u8[517]",
+      "status": "candidate",
+      "meaning": "sprites DAT 미명명 byte 배열",
+      "limits": "객체 필드·공식 필드명·실제 로드값/게임 효과 미확정"
+    },
+    "orders_dat_descriptor_array": {
+      "offset": "0xDA92A0",
+      "type": "inline records stride0x18; destination VA u64 +0, width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "orders DAT 로딩 descriptor",
+      "limits": "내부 명령 ID의 공개 BWAPI CommandKind 대응·각 표의 공식 의미/실제 로드값 미확정"
+    },
+    "orders_dat_byte_e540e0": {
+      "offset": "0xE540E0",
+      "type": "u8[189]",
+      "status": "candidate",
+      "meaning": "orders DAT 미명명 byte 배열",
+      "limits": "공식 필드명·실제 로드값/게임 효과 미확정"
+    },
+    "orders_dat_word_e54860": {
+      "offset": "0xE54860",
+      "type": "u16[189]",
+      "status": "candidate",
+      "meaning": "orders DAT 미명명 word 배열",
+      "limits": "공식 필드명·실제 로드값/게임 효과 미확정"
+    },
+    "images_dat_descriptor_array": {
+      "offset": "0xDA9100",
+      "type": "inline records stride0x18; destination VA u64 +0, width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "images DAT 로딩 descriptor.",
+      "limits": "flag1 qword가 나중에 포인터로 바뀌는 image는 None. 이름 없는 열의 의미는 확정하지 않았다"
+    },
+    "images_dat_byte_e468a0": {
+      "offset": "0xE468A0",
+      "type": "u8[999]",
+      "status": "candidate",
+      "meaning": "images DAT 미명명 byte 배열",
+      "limits": "객체 필드·공식 필드명·실제 표값/게임 효과 미확정"
+    },
+    "images_dat_byte_e460c0": {
+      "offset": "0xE460C0",
+      "type": "u8[999]",
+      "status": "candidate",
+      "meaning": "images DAT 미명명 byte 배열",
+      "limits": "bit/객체 필드의 공식 의미·실제 표값/게임 효과 미확정"
+    },
+    "tech_dat_descriptor_array": {
+      "offset": "0xDA9700",
+      "type": "inline records stride0x18; destination VA u64 +0, width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "techdata DAT 로딩 descriptor",
+      "limits": "실제 로드값·미명명 표 공식 의미/게임 효과 미확정"
+    },
+    "tech_dat_word_e58640": {
+      "offset": "0xE58640",
+      "type": "u16[44]",
+      "status": "candidate",
+      "meaning": "techdata DAT 미명명 word 배열",
+      "limits": "객체 성격·공식 필드명·실제 표값/게임 효과 미확정"
+    },
+    "tech_dat_word_e586a0": {
+      "offset": "0xE586A0",
+      "type": "u16[44]",
+      "status": "candidate",
+      "meaning": "techdata DAT 문자열 조회 번호 word 배열",
+      "limits": "공식 필드명·실제 표값/표시 문구 미확정"
+    },
+    "upgrade_dat_descriptor_array": {
+      "offset": "0xDA9F00",
+      "type": "inline records stride0x18; destination VA u64 +0, width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "upgrades DAT 로딩 descriptor",
+      "limits": "플레이어별 max upgrade 배열과 동일시하지 않음. 실제 로드값·미명명 표 공식 의미 미확정"
+    },
+    "upgrade_dat_word_e5dba0": {
+      "offset": "0xE5DBA0",
+      "type": "u16[61]",
+      "status": "candidate",
+      "meaning": "upgrades DAT 미명명 word 배열",
+      "limits": "객체 성격·공식 필드명·실제 표값/게임 효과 미확정"
+    },
+    "upgrade_dat_word_e5dc20": {
+      "offset": "0xE5DC20",
+      "type": "u16[61]",
+      "status": "candidate",
+      "meaning": "upgrades DAT 문자열 조회 번호 word 배열",
+      "limits": "공식 필드명·실제 표값/표시 문구 미확정"
+    },
+    "portdata_dat_descriptor_array": {
+      "offset": "0xDA9520",
+      "type": "inline records stride0x18; destination VA u64 +0, width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "portdata DAT 로딩 descriptor.",
+      "limits": "file 열은 로드 뒤 포인터로 덮여 파일 번호를 공개하지 못한다"
+    },
+    "portdata_dat_qword_e54c20": {
+      "offset": "0xE54C20",
+      "type": "u64[110] destination; u32[110] file input",
+      "status": "candidate",
+      "meaning": "portdata DAT 미명명 qword 대상 배열",
+      "limits": "현재 값이 파일 로드값 그대로인지·포인터 여부·공식 의미/게임 효과 미확정"
+    },
+    "mapdata_dat_descriptor_array": {
+      "offset": "0xDD4EA0",
+      "type": "inline record stride0x18; destination VA u64 +0, width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "mapdata DAT 로딩 descriptor.",
+      "limits": "값이 문자열 번호인지 캠페인에서 미대조"
+    },
+    "mapdata_dat_qword_106b360": {
+      "offset": "0x106B360",
+      "type": "u64[65] destination; u32[65] file input",
+      "status": "candidate",
+      "meaning": "mapdata DAT 미명명 qword 대상 배열",
+      "limits": "qword의 포인터/공식 의미·실제 파일값/게임 효과 미확정"
+    },
+    "unit_dat_descriptor_array": {
+      "offset": "0xDA9820",
+      "type": "inline records stride0x18; destination VA u64 +0, width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "유닛 DAT 로딩 descriptor",
+      "limits": "항목별 count는 독립적으로 96/106/192/228/456/912 등이 있다. 실제 로드값·미명명 표 공식 의미 미관측"
+    },
+    "unit_dat_byte_e597b0": {
+      "offset": "0xE597B0",
+      "type": "u8[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 byte 배열",
+      "limits": "공식 필드명·Sprite+0x15 의미·실제 로드값/효과 미확정"
+    },
+    "unit_dat_byte_e5cd20": {
+      "offset": "0xE5CD20",
+      "type": "u8[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 수용량 산술 byte 배열 A",
+      "limits": "공식 필드명·단위·실제 로드값/수용 효과 미확정"
+    },
+    "unit_dat_byte_e5ce10": {
+      "offset": "0xE5CE10",
+      "type": "u8[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 수용량 산술 byte 배열 B",
+      "limits": "공식 필드명·단위·실제 로드값/수용 효과 미확정"
+    },
+    "unit_dat_dword_e58ce0": {
+      "offset": "0xE58CE0",
+      "type": "u32[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 dword 배열",
+      "limits": "공식 필드명·단위·실제 로드값/효과 미확정"
+    },
+    "unit_dat_byte_e59160": {
+      "offset": "0xE59160",
+      "type": "u8[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 타입별 gate byte",
+      "limits": "전체 조건/공식 이름·실제 로드값/효과 미확정"
+    },
+    "unit_dat_word_e5d560": {
+      "offset": "0xE5D560",
+      "type": "u16[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 타입별 bit mask",
+      "limits": "다른 bit 의미·공식 이름·실제 로드값/효과 미확정"
+    },
+    "unit_dat_paired_words_e5b510": {
+      "offset": "0xE5B510",
+      "type": "u16[456], two per 228 unit types",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 타입별 좌표 보정 두 값",
+      "limits": "좌표 단위·공식 이름·실제 로드값/효과 미확정"
+    },
+    "unit_dat_word_e5adf0": {
+      "offset": "0xE5ADF0",
+      "type": "u16[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 word 배열",
+      "limits": "선택 타입 조건·공식 이름·실제 로드값/효과 미확정"
+    },
+    "unit_dat_word_e5afc0": {
+      "offset": "0xE5AFC0",
+      "type": "u16[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 word 배열",
+      "limits": "선택 타입 조건·공식 이름·실제 로드값/효과 미확정"
+    },
+    "unit_dat_byte_e5a2f0": {
+      "offset": "0xE5A2F0",
+      "type": "u8[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 build queue 타입 bit gate",
+      "limits": "현재 Unit 타입 인덱스가 아님. 전체 bit 의미·공식 이름·실제 로드값/효과 미확정"
+    },
+    "unit_dat_byte_e5ca50": {
+      "offset": "0xE5CA50",
+      "type": "u8[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 player 누적 슬롯 분기 byte",
+      "limits": "나머지 bit·공식 이름·실제 로드값/공개 지표 미확정"
+    },
+    "unit_dat_byte_e5cb40": {
+      "offset": "0xE5CB40",
+      "type": "u8[228]",
+      "status": "candidate",
+      "meaning": "유닛 DAT 미명명 player 누적 산술 byte",
+      "limits": "단위·공식 이름·실제 로드값/공개 지표 미확정"
+    },
+    "weapon_base_cooldown_table": {
+      "offset": "0xE5EE60",
+      "type": "u8 indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "게임의 상태 반영 전 무기 공격 간격",
+      "limits": "저장 이미지의 이 위치 32B는 0; 실제 로드 표값 미관측"
+    },
+    "weapon_min_range_table": {
+      "offset": "0xE5E220",
+      "type": "u32 indexed by weapon ID <130",
+      "status": "candidate",
+      "meaning": "무기별 최소 사거리 판정 임계값",
+      "limits": "Sprite 좌표 절대 단위·모든 대상 예외·실제 표값·공격 결과 미관측. 최대 사거리 입력 0xE5E430과 별개"
+    },
+    "weapon_base_max_range_table": {
+      "offset": "0xE5E430",
+      "type": "u32[130] indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "native 최대 사거리 함수(0x1B87F0)의 기본 표 입력",
+      "limits": "주소는 최대 사거리 함수에서 얻었다. 실제 로드 표값·공격 결과 미관측"
+    },
+    "weapon_dat_descriptor_array": {
+      "offset": "0xDAA0A0",
+      "type": "inline records stride0x18; destination VA u64 +0, element width u32 +8, count u32 +0xC, flag u8 +0x10",
+      "status": "validated",
+      "meaning": "무기 DAT 배열 로딩 descriptor",
+      "limits": "이 장부 등록은 reader 지원이나 실제 로드값·공식 의미를 뜻하지 않는다. E5E080의 직접 소비 미확인"
+    },
+    "weapon_dat_byte_e5e7f0": {
+      "offset": "0xE5E7F0",
+      "type": "u8[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 미명명 byte 배열",
+      "limits": "공식 필드 의미·실제 로드값 미확정"
+    },
+    "weapon_dat_byte_e5eef0": {
+      "offset": "0xE5EEF0",
+      "type": "u8[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 미명명 byte 배열",
+      "limits": "DL 입력의 무기 ID 대응·공식 필드 의미·실제 로드값 미확정"
+    },
+    "weapon_dat_byte_e5f010": {
+      "offset": "0xE5F010",
+      "type": "u8[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 미명명 byte 배열",
+      "limits": "RDI 인덱스의 해당 분기까지 완전한 유래·공식 필드 의미·실제 로드값 미확정"
+    },
+    "weapon_dat_byte_e5e760": {
+      "offset": "0xE5E760",
+      "type": "u8[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 미명명 byte 배열",
+      "limits": "공식 필드명·실제 로드값·게임 분기 효과 미확정"
+    },
+    "weapon_dat_byte_e5f0a0": {
+      "offset": "0xE5F0A0",
+      "type": "u8[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 미명명 byte 배열",
+      "limits": "공식 필드명·수치 단위·실제 로드값/게임 결과 미확정"
+    },
+    "weapon_dat_byte_e5f130": {
+      "offset": "0xE5F130",
+      "type": "u8[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 미명명 byte 배열",
+      "limits": "공식 필드명·수치 단위·실제 로드값/게임 결과 미확정"
+    },
+    "weapon_dat_target_check_mask_e5e110": {
+      "offset": "0xE5E110",
+      "type": "u16[130] indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "무기 ID별 대상 검사 비트마스크",
+      "limits": "타입 flag 공식 이름·나머지 비트·실제 로드값/최종 게임 효과 미확정. E5F1C0과 별도"
+    },
+    "weapon_dat_angle_threshold_e5ef80": {
+      "offset": "0xE5EF80",
+      "type": "u8[130] indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "무기 ID별 8-bit 원형 각도 차이 허용 임계값",
+      "limits": "공식 필드명·각도 단위·실제 로드값/공격 전체 조건/게임 효과 미확정"
+    },
+    "weapon_dat_word_e5dd60": {
+      "offset": "0xE5DD60",
+      "type": "u16[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 문자열 조회 번호 word 배열",
+      "limits": "공식 필드명·실제 표값/표시 문구 미확정"
+    },
+    "weapon_dat_dword_e5de70": {
+      "offset": "0xE5DE70",
+      "type": "u32[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 미명명 dword 배열",
+      "limits": "값의 자원/객체 종류·공식 필드명·실제 로드값/게임 효과 미확정"
+    },
+    "weapon_dat_byte_e5e080": {
+      "offset": "0xE5E080",
+      "type": "u8[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 미명명 byte 배열의 위치·형태",
+      "limits": "직접 참조에서 확실한 소비를 찾지 못했다. 간접 소비가 없다는 뜻은 아니다. 공식 의미·실제 로드값/효과 미확정"
+    },
+    "weapon_dat_word_e5f1c0": {
+      "offset": "0xE5F1C0",
+      "type": "u16[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 문자열 조회 번호 word 배열",
+      "limits": "target-mask는 별도 E5E110. 공식 이름·실제 표값/표시 문구 미확정"
+    },
+    "weapon_dat_word_e5f2d0": {
+      "offset": "0xE5F2D0",
+      "type": "u16[130]",
+      "status": "candidate",
+      "meaning": "무기 DAT 미명명 word 배열",
+      "limits": "객체의 최종 의미·공식 필드명·실제 로드값/게임 효과 미확정"
+    },
+    "unit_rect_extent_table": {
+      "offset": "0xE5BA20",
+      "type": "u16[4] indexed by native Unit type",
+      "status": "candidate",
+      "meaning": "유닛 위치 주변 축정렬 외곽의 left/up/right/down 입력 후보",
+      "limits": "실제 표값·Sprite 좌표 절대 단위·공개 dimension API와 동일성 미관측"
+    },
+    "weapon_inner_splash_radius_table": {
+      "offset": "0xE5E910",
+      "type": "u16 indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "탄환 범위 피해의 안쪽 반경 입력",
+      "limits": "해당 검사는 앞선 전역조건 분기에 종속. 거리 단위·표값·최종 피해 미관측"
+    },
+    "weapon_median_splash_radius_table": {
+      "offset": "0xE5EA20",
+      "type": "u16 indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "탄환 범위 피해의 중간 반경 입력",
+      "limits": "거리 단위·표값·R8D 최종 피해 비율 미관측"
+    },
+    "weapon_outer_splash_radius_table": {
+      "offset": "0xE5EB30",
+      "type": "u16 indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "탄환 범위 피해의 바깥 반경 및 폭발 검색 영역 입력",
+      "limits": "거리 비교 지표·경계 포함 여부·표값·실게임 효과 미관측"
+    },
+    "upgrade_base_time_table": {
+      "offset": "0xE5DA20",
+      "type": "u16 indexed by upgrade ID",
+      "status": "candidate",
+      "meaning": "업그레이드 시작 시 기본 시간",
+      "limits": "저장 이미지의 이 위치 32B는 0; 런타임 표값과 writer 미관측"
+    },
+    "upgrade_time_increment_table": {
+      "offset": "0xE5DAA0",
+      "type": "u16 indexed by upgrade ID",
+      "status": "candidate",
+      "meaning": "업그레이드 현재 레벨당 시간 증가분",
+      "limits": "저장 이미지의 이 위치 32B는 0; 런타임 표값과 writer 미관측"
+    },
+    "tech_research_time_table": {
+      "offset": "0xE584C0",
+      "type": "u16 indexed by tech ID",
+      "status": "candidate",
+      "meaning": "기술 연구 시작 시 기본 시간",
+      "limits": "저장 이미지의 이 위치 32B는 0; 런타임 표값과 writer 미관측"
+    },
+    "internal_command_to_tech_table": {
+      "offset": "0xE546E0",
+      "type": "u8[189] indexed by internal command ID u8",
+      "status": "candidate",
+      "meaning": "게임 내부 명령 ID에서 기술 ID로 가는 표",
+      "limits": "BWAPI CommandKind나 외부 명령번호와 동일시하지 않음. 런타임 표값·실제 사용 명령 범위 미관측"
+    },
+    "tech_energy_cost_table": {
+      "offset": "0xE58520",
+      "type": "u16 indexed by tech ID <44",
+      "status": "candidate",
+      "meaning": "기술 에너지 비용 입력",
+      "limits": "실제 표값·에너지 소비와 명령 성공 미관측"
+    },
+    "unit_base_build_time_table": {
+      "offset": "0xE5C6B0",
+      "type": "u16 indexed by unit type <0xE4",
+      "status": "candidate",
+      "meaning": "유닛 타입별 기본 건설 시간",
+      "limits": "특수 타입 전환의 전체 의미·런타임 표값·실제 진행 미관측"
+    },
+    "unit_extra_build_time_table": {
+      "offset": "0xE5C880",
+      "type": "u16 indexed by unit type - 0xE4 when type >=0xE4",
+      "status": "candidate",
+      "meaning": "0xE4 이상 타입의 추가 건설 시간",
+      "limits": "추가표의 끝 범위·런타임 값·실제 진행 미관측"
+    },
+    "unit_seek_range_byte_table": {
+      "offset": "0xE5A770",
+      "type": "u8 indexed by native unit type",
+      "status": "candidate",
+      "meaning": "seekRange 관련 유닛 범위 byte 표; 무기 최대 사거리 타일값으로 갱신됨",
+      "limits": "불변 기본값이 아님. 원천 값·전체 초기화 범위·실제 seek 행동 미관측. 은폐 탐지·시야 반경으로 해석하지 않음"
+    },
+    "upgrade_cost_a_base_table": {
+      "offset": "0xE5D820",
+      "type": "u16 indexed by upgrade ID",
+      "status": "candidate",
+      "meaning": "업그레이드 광물 기본값; 0x1EC180에서 현재 레벨 증가분을 합산하고 소유자별 0xED3A80에 저장",
+      "limits": "런타임 표값·실제 결제 미관측"
+    },
+    "upgrade_cost_a_level_table": {
+      "offset": "0xE5D8A0",
+      "type": "u16 indexed by upgrade ID",
+      "status": "candidate",
+      "meaning": "업그레이드 광물의 현재 레벨당 증가분",
+      "limits": "런타임 표값 미관측"
+    },
+    "upgrade_cost_b_base_table": {
+      "offset": "0xE5D920",
+      "type": "u16 indexed by upgrade ID",
+      "status": "candidate",
+      "meaning": "업그레이드 가스 기본값; 0x1EC140에서 현재 레벨 증가분을 합산하고 소유자별 0xED3AB0에 저장",
+      "limits": "런타임 표값·실제 결제 미관측"
+    },
+    "upgrade_cost_b_level_table": {
+      "offset": "0xE5D9A0",
+      "type": "u16 indexed by upgrade ID",
+      "status": "candidate",
+      "meaning": "업그레이드 가스의 현재 레벨당 증가분",
+      "limits": "런타임 표값 미관측"
+    },
+    "tech_cost_a_table": {
+      "offset": "0xE58400",
+      "type": "u16 indexed by tech ID",
+      "status": "candidate",
+      "meaning": "연구 광물 기본값, 소유자별 0xED3A80에 저장",
+      "limits": "런타임 표값·실제 결제 미관측"
+    },
+    "tech_cost_b_table": {
+      "offset": "0xE58460",
+      "type": "u16 indexed by tech ID",
+      "status": "candidate",
+      "meaning": "연구 가스 기본값, 소유자별 0xED3AB0에 저장",
+      "limits": "런타임 표값·실제 결제 미관측"
+    },
+    "unit_cost_a_table": {
+      "offset": "0xE5C310",
+      "type": "u16 indexed by unit type",
+      "status": "candidate",
+      "meaning": "유닛 광물 기본값, 소유자별 0xED3A80에 저장",
+      "limits": "런타임 표값·실제 결제 미관측"
+    },
+    "unit_cost_b_table": {
+      "offset": "0xE5C4E0",
+      "type": "u16 indexed by unit type",
+      "status": "candidate",
+      "meaning": "유닛 가스 기본값, 소유자별 0xED3AB0에 저장",
+      "limits": "런타임 표값·실제 결제 미관측"
+    },
+    "unit_supply_demand_table": {
+      "offset": "0xE5CC30",
+      "type": "u8 indexed by unit type",
+      "status": "candidate",
+      "meaning": "R8D 조건부 보급 수요 입력, 소유자별 0xED3AE0에 저장",
+      "limits": "실제 표값·표시 단위와 모든 예외 미확정"
+    },
+    "unit_cost_attribute_table": {
+      "offset": "0xE5A3E0",
+      "type": "u32 indexed by unit type",
+      "status": "candidate",
+      "meaning": "보급 수요 배율 조건의 타입 속성; bit index 10 (mask 0x400)이면 두 배",
+      "limits": "속성의 이름·다른 bit 의미 및 런타임 값 미확정"
+    },
+    "owner_cost_a_slot": {
+      "offset": "0xED3A80",
+      "type": "u32 indexed by owner ID",
+      "status": "candidate",
+      "meaning": "업그레이드·연구·훈련 공통 광물 비용 임시 슬롯",
+      "limits": "실제 게임 결제 결과 미관측"
+    },
+    "owner_cost_b_slot": {
+      "offset": "0xED3AB0",
+      "type": "u32 indexed by owner ID",
+      "status": "candidate",
+      "meaning": "업그레이드·연구·훈련 공통 가스 비용 임시 슬롯",
+      "limits": "실제 게임 결제 결과 미관측"
+    },
+    "owner_supply_demand_slot": {
+      "offset": "0xED3AE0",
+      "type": "u32 indexed by owner ID",
+      "status": "candidate",
+      "meaning": "유닛 비용 검사 경로의 조건부 보급 수요 저장 슬롯",
+      "limits": "표시 단위, 모든 소비자 및 실제 보급 변화 미확정"
+    },
+    "tileset_indexed_map_tiles_pointer": {
+      "offset": "0xE7E478",
+      "type": "pointer64 -> u16 tile entries",
+      "status": "candidate",
+      "meaning": "tileset이 반영된 지도 타일 배열의 포인터",
+      "limits": "저장 PE 포인터 0; 실제 할당 주소·내용·인덱스 변환 미관측; 외부 실행물이 tileset 반영 타일 배열로 실사용함을 관측(원본 실행값은 미확정)"
+    },
+    "pixel_height_first_tile_pointer": {
+      "offset": "0xE7E490",
+      "type": "pointer64 -> u16 tile entries",
+      "status": "candidate",
+      "meaning": "픽셀 높이 계산에서 우선 읽는 지도 tile 배열 포인터",
+      "limits": "helper 반환 포인터의 생성·역할·실제 내용 미확정. overlay/creep으로 명명하지 않음"
+    },
+    "vx4_map_tiles_pointer": {
+      "offset": "0xED3B98",
+      "type": "pointer64 -> u16 tile entries",
+      "status": "candidate",
+      "meaning": "vx4 지도 타일 ID 배열의 포인터",
+      "limits": "저장 PE 포인터 0; 실제 할당 주소·내용·인덱스 변환 미관측"
+    },
+    "minitile_graphics_pointer": {
+      "offset": "0xED3BA8",
+      "type": "pointer64",
+      "status": "candidate",
+      "meaning": "tileset의 minitile graphics 포인터",
+      "limits": "실제 포인터·데이터와 인덱스 레이아웃 미관측"
+    },
+    "minitile_data_pointer": {
+      "offset": "0xE7E450",
+      "type": "pointer64 -> u16 minitile entries",
+      "status": "candidate",
+      "meaning": "tileset의 minitile data 포인터",
+      "limits": "실제 포인터·전체 레이아웃 미관측; 외부 실행물이 minitile 데이터로 실사용함을 관측(원본 실행값은 미확정)"
+    },
+    "tile_default_flags_pointer": {
+      "offset": "0xE7E458",
+      "type": "pointer64 -> dword tile flags",
+      "status": "candidate",
+      "meaning": "tileset의 tile 기본 플래그 포인터",
+      "limits": "실제 포인터·값, 각 비트 의미와 writer 실행 시점 미관측"
+    },
+    "tileset_cv5_pointer": {
+      "offset": "0x10CC240",
+      "type": "pointer64",
+      "status": "candidate",
+      "meaning": "tileset CV5 데이터 포인터",
+      "limits": "실제 포인터·CV5 전체 레이아웃 미관측; 외부 실행물이 CV5 데이터로 실사용함을 관측(원본 실행값은 미확정)"
+    },
+    "tileset_vx4ex_pointer": {
+      "offset": "0xED3B90",
+      "type": "pointer64",
+      "status": "candidate",
+      "meaning": "tileset VX4EX 데이터 포인터",
+      "limits": "실제 포인터·데이터·인덱스 레이아웃 미관측"
+    },
+    "creep_original_tiles_pointer": {
+      "offset": "0x10C8378",
+      "type": "pointer64 -> u16 tile entries",
+      "status": "candidate",
+      "meaning": "creep_original_tiles 버퍼",
+      "limits": "실제 포인터·값과 갱신 시점 미관측"
+    },
+    "creep_tile_borders_pointer": {
+      "offset": "0x10C8380",
+      "type": "pointer64 -> u8 tile entries",
+      "status": "candidate",
+      "meaning": "creep_tile_borders 버퍼",
+      "limits": "실제 포인터·값과 갱신 시점 미관측"
+    },
+    "unit_path_array_pointer": {
+      "offset": "0x10A1878",
+      "type": "pointer64 -> 1024 records, stride 0x80",
+      "status": "candidate",
+      "meaning": "유닛 경로 레코드 배열의 포인터",
+      "limits": "실제 배열/Unit pointer 값·이동 효과 미관측. SAI pathing 0x1097780 및 record+0x188 rally와 별개"
+    },
+    "first_free_unit_path": {
+      "offset": "0x10A1870",
+      "type": "pointer64 to path record",
+      "status": "candidate",
+      "meaning": "유닛 경로 레코드의 첫 빈 슬롯 포인터",
+      "limits": "실제 포인터·free list 재사용 시점 미관측"
+    },
+    "ai_resource_areas": {
+      "offset": "0x109E8B0",
+      "type": "ResourceArea[250] (0x30, i16 x/y +0/+2) + used_count u32 + frames_till_update u32 = 0x2EE8",
+      "status": "validated",
+      "meaning": "AI 자원 구역 전역 배열 기준 주소",
+      "limits": "지역별 값 대조는 하지 않았다"
+    },
+    "player_ai_towns": {
+      "offset": "0xEACF00",
+      "type": "inline entries stride 0x10, pointer64 at +8",
+      "status": "candidate",
+      "meaning": "플레이어 ID로 접근하는 AI town 포인터 항목 배열",
+      "limits": "항목 각 qword의 정확한 의미·슬롯 수·실제 포인터와 AI 실행 미관측. player_ai 0xE7FAC0과 구분"
+    },
+    "pylon_auras_visible_flag": {
+      "offset": "0xE780DC",
+      "type": "u32",
+      "status": "candidate",
+      "meaning": "pylon_auras_visible 전역 플래그.",
+      "limits": "0/1의 전체 의미·실제 전이·공개 소비 미관측"
+    },
+    "pylon_refresh_flag": {
+      "offset": "0xE780D8",
+      "type": "u32",
+      "status": "candidate",
+      "meaning": "pylon_refresh 전역 플래그",
+      "limits": "0/1의 전체 의미·실제 전이·공개 소비 미관측"
+    },
+    "first_pylon_pointer": {
+      "offset": "0xE780C0",
+      "type": "pointer64 -> native Unit list",
+      "status": "validated",
+      "meaning": "Pylon 목록 머리 포인터(record+0x180/+0x188 링크).",
+      "limits": "타입별 union 위치라 범용 CUnit 필드로 간주하지 않음. 실제 목록·aura 효과 미관측"
+    },
+    "first_hidden_unit_pointer": {
+      "offset": "0xE77FE8",
+      "type": "pointer64 -> native Unit list",
+      "status": "validated",
+      "meaning": "hidden Unit 목록 첫 포인터(끝 포인터 0xE78088).",
+      "limits": "실제 목록·유닛 상태/종류와 active/invisible 목록과의 관계 미관측"
+    },
+    "last_hidden_unit_pointer": {
+      "offset": "0xE78088",
+      "type": "pointer64 -> native Unit list",
+      "status": "candidate",
+      "meaning": "hidden Unit 목록 마지막 포인터",
+      "limits": "실제 목록·유닛 상태/종류 미관측"
+    },
+    "first_invisible_unit_pointer": {
+      "offset": "0xE78450",
+      "type": "pointer64 -> native Unit list",
+      "status": "validated",
+      "meaning": "invisible Unit 목록 머리(record+0x170/+0x178 링크).",
+      "limits": "cloak 유닛(Wraith·Observer)은 미관측"
+    },
+    "first_ai_script_pointer": {
+      "offset": "0xEAEBF0",
+      "type": "pointer64 -> doubly linked AI script nodes",
+      "status": "candidate",
+      "meaning": "AI 스크립트 목록 머리 포인터",
+      "limits": "node 다른 필드 의미·실제 목록·AI 실행 미관측"
+    },
+    "order_array_pointer": {
+      "offset": "0xE76930",
+      "type": "pointer64 -> order records stride 0x28",
+      "status": "validated",
+      "meaning": "native order 레코드 배열 기준 포인터.",
+      "limits": "실제 배열 주소·현재 size/capacity와 전체 order 필드 미관측"
+    },
+    "order_pool_size": {
+      "offset": "0xE76938",
+      "type": "u64",
+      "status": "validated",
+      "meaning": "native Order 배열의 현재 레코드 수와 초기화 루프 경계.",
+      "limits": "capacity 0xE76940, active count 0xE76948, 실제 free 목록 길이와 동일시하지 않음. 현재 게임 값 미관측"
+    },
+    "order_pool_capacity": {
+      "offset": "0xE76940",
+      "type": "u64",
+      "status": "candidate",
+      "meaning": "native Order 배열 할당 capacity header",
+      "limits": "size/active/free 길이와 동일성·실제 현재 값 미관측"
+    },
+    "order_pool_config_requested_count": {
+      "offset": "0xE7E02C",
+      "type": "u32",
+      "status": "candidate",
+      "meaning": "별도 Order 풀 resize 호출의 입력 수",
+      "limits": "설정 파일/사용자 옵션 이름·런타임 호출 순서·현재 풀 size 미확정"
+    },
+    "first_free_order_pointer": {
+      "offset": "0xE76920",
+      "type": "pointer64 to order record",
+      "status": "validated",
+      "meaning": "order 빈 목록 첫 포인터.",
+      "limits": "실제 빈 목록과 재사용 시점 미관측"
+    },
+    "last_free_order_pointer": {
+      "offset": "0xE76928",
+      "type": "pointer64 to order record",
+      "status": "candidate",
+      "meaning": "order 빈 목록 마지막 포인터",
+      "limits": "실제 빈 목록과 재사용 시점 미관측"
+    },
+    "fow_sprite_array_pointer": {
+      "offset": "0xE77DE0",
+      "type": "pointer64 -> FOW sprite records stride 0x20",
+      "status": "validated",
+      "meaning": "fog-of-war sprite 배열 기준 포인터.",
+      "limits": "free 목록 순회·용량은 미관측"
+    },
+    "fow_sprite_list_pointers": {
+      "offsets": [
+        "0xE77E18",
+        "0xE77E20",
+        "0xE77E28",
+        "0xE77E30"
+      ],
+      "type": "pointer64 each -> FOW sprite records",
+      "status": "validated",
+      "meaning": "순서대로 빈 목록 첫·끝, 활성 목록 첫·끝.",
+      "limits": "free 목록 순회·용량은 미관측"
+    },
+    "fow_sprite_record_payload": {
+      "basis": "native FOW sprite record",
+      "offsets": [
+        "+0x10",
+        "+0x18"
+      ],
+      "type": [
+        "u16 Unit type ID on successful creation",
+        "pointer64 -> cloned native Sprite"
+      ],
+      "status": "validated",
+      "meaning": "호출자 native Unit의 타입과 Sprite 복사 생성 결과",
+      "limits": "free 목록 순회·용량은 미관측"
+    },
+    "lone_sprite_array_pointer": {
+      "offset": "0xE77DC8",
+      "type": "pointer64 -> records stride 0x20",
+      "status": "candidate",
+      "meaning": "lone sprite 배열 기준 포인터",
+      "limits": "실제 배열·payload·화면 효과 미관측"
+    },
+    "lone_sprite_list_pointers": {
+      "offsets": [
+        "0xE77DF8",
+        "0xE77E00",
+        "0xE77E08",
+        "0xE77E10"
+      ],
+      "type": "pointer64 each -> lone sprite records",
+      "status": "candidate",
+      "meaning": "순서대로 빈 목록 첫·끝, 활성 목록 첫·끝",
+      "limits": "실제 목록·링크 payload 의미 미관측"
+    },
+    "dying_unit_list_pointers": {
+      "offsets": [
+        "0xE78080",
+        "0xE77FD0"
+      ],
+      "type": "pointer64 each -> native Unit list",
+      "status": "validated",
+      "meaning": "dying Unit 목록 첫·끝(Unit+0/+8 링크 가정).",
+      "limits": "Unit 링크 offset·실제 목록 구성과 death 동작 미관측; hidden/active 목록과 구분"
+    },
+    "revealer_unit_list_pointers": {
+      "offsets": [
+        "0xE77FF0",
+        "0xE78090"
+      ],
+      "type": "pointer64 each -> native Unit list",
+      "status": "validated",
+      "meaning": "revealer Unit 목록 첫·끝(Unit+0/+8 링크).",
+      "limits": "Unit 링크 offset·실제 목록 구성과 시야 효과 미관측"
+    },
+    "order_timer_reset_counters": {
+      "offsets": [
+        "0xE77FC0",
+        "0xE77FC4"
+      ],
+      "type": "u32 each",
+      "status": "candidate",
+      "meaning": "두 명령 타이머 재설정 카운터",
+      "limits": "Unit byte의 정확한 행동·실제 카운터 전이 미관측"
+    },
+    "vision_update_counter": {
+      "offset": "0x1067C0C",
+      "type": "u32",
+      "status": "candidate",
+      "meaning": "시야 갱신 관련 카운터",
+      "limits": "실제 주기·시야 효과 미관측"
+    },
+    "vision_updated_byte": {
+      "offset": "0x1067BE4",
+      "type": "u8",
+      "status": "candidate",
+      "meaning": "시야 갱신 경로의 조건 byte",
+      "limits": "실제 값·화면 시야 효과 미관측"
+    },
+    "dcreep_update_counters": {
+      "offsets": [
+        "0x10B0C14",
+        "0x10B0C18"
+      ],
+      "type": "u32 each",
+      "status": "candidate",
+      "meaning": "creep 갱신 예약 카운터 둘",
+      "limits": "주변 dcreep list 전체 layout, 실제 값·creep 효과 미관측"
+    },
+    "unit_strength_array": {
+      "offset": "0xEB2AC0",
+      "type": "inline u32[2][228], air then ground candidate",
+      "status": "candidate",
+      "meaning": "타입별 air/ground unit strength 입력",
+      "limits": "실제 표값·AI/전투 적용 효과 미관측"
+    },
+    "trigger_current_player": {
+      "offset": "0x10B0D34",
+      "type": "u32",
+      "status": "candidate",
+      "meaning": "trigger 순회 중 player 인덱스",
+      "limits": "실제 값·trigger 실행 결과 미관측"
+    },
+    "map_history_pointer": {
+      "offset": "0xEAEC00",
+      "type": "pointer64 -> 0x18-byte record",
+      "status": "candidate",
+      "meaning": "map history lazy allocation pointer",
+      "limits": "record 내용·실제 pointer·map history 효과 미관측"
+    },
+    "sfx_json_record_array_pointer": {
+      "offset": "0xEAEC08",
+      "type": "pointer64 -> records stride0xF8",
+      "status": "candidate",
+      "meaning": "sfx.json 파싱 항목의 동적 레코드 배열 루트",
+      "limits": "실제 pointer/레코드 값·다른 필드 의미·ID/재생 효과 및 sfxdata.dat 대체관계 미확정. 인접 0xEAEC00 map history와 혼동하지 않음"
+    },
+    "sfx_json_record_count": {
+      "offset": "0xEAEC10",
+      "type": "u64 count",
+      "status": "candidate",
+      "meaning": "sfx.json 파싱 항목 배열의 현재 개수",
+      "limits": "실제 count·항목 ID/재생 효과 미관측"
+    },
+    "sfx_json_record_control": {
+      "offset": "0xEAEC18",
+      "type": "u64",
+      "status": "candidate",
+      "meaning": "sfx.json 동적 배열 확장 조건에 읽히는 제어값",
+      "limits": "용량 또는 다른 제어값의 정확한 의미·실제 값 미확정"
+    },
+    "player_turn_buffers": {
+      "offsets": [
+        "0x10924B0",
+        "0x1092510"
+      ],
+      "type": "inline regions; turn data and size entries",
+      "status": "candidate",
+      "meaning": "player_turns/player_turns_size",
+      "limits": "항목 구조·길이, 실제 네트워크 turn 효과 미관측"
+    },
+    "cheat_flags": {
+      "offset": "0x1053E30",
+      "type": "u32 bitfield",
+      "status": "validated",
+      "meaning": "cheat_flags(치트 비트).",
+      "limits": "비트별 치트 이름·실제 게임 효과 미관측"
+    },
+    "step_game_frames": {
+      "offset": "0xDCF048",
+      "type": "u32",
+      "status": "candidate",
+      "meaning": "step_game_frames",
+      "limits": "ECX 외부 의미·실제 프레임 처리와의 관계 미관측; 외부 실행물이 프레임 카운터로 실사용함을 관측(원본 실행값은 미확정)"
+    },
+    "replay_seek_frame": {
+      "offset": "0x1095858",
+      "type": "u32",
+      "status": "candidate",
+      "meaning": "replay_seek_frame",
+      "limits": "실제 seek 요청·프레임 전이 미관측"
+    },
+    "replay_scenario_chk": {
+      "offsets": [
+        "0x1095840",
+        "0x1095848"
+      ],
+      "type": [
+        "u32 byte size",
+        "pointer64"
+      ],
+      "status": "candidate",
+      "meaning": "replay scenario CHK 크기와 버퍼 포인터",
+      "limits": "실제 CHK 버퍼·크기·replay 효과 미관측"
+    },
+    "drag_selection_state": {
+      "offsets": [
+        "0x10B0D18",
+        "0x10B0D1C",
+        "0x10B0D1E"
+      ],
+      "type": [
+        "u8",
+        "u16",
+        "u16"
+      ],
+      "status": "candidate",
+      "meaning": "is_selecting과 select_start_x/y",
+      "limits": "실제 UI drag 입력·선택 결과 미관측"
+    },
+    "ai_military_update_counter": {
+      "offset": "0xEACF84",
+      "type": "u32",
+      "status": "candidate",
+      "meaning": "AI military 갱신 카운터",
+      "limits": "실제 갱신 주기·AI 행동 미관측"
+    },
+    "ai_target_ignore_reset_state": {
+      "offsets": [
+        "0xEACF90",
+        "0xEACF88",
+        "0xEACF8C"
+      ],
+      "type": "u32 each",
+      "status": "candidate",
+      "meaning": "target ignore 요청·재설정 카운터 둘",
+      "limits": "정확한 요청 계약·실제 AI 대상 선택 효과 미관측"
+    },
+    "step_ai_regions_indices": {
+      "offsets": [
+        "0xEBCE28",
+        "0xEBCE2C"
+      ],
+      "type": "u32 each",
+      "status": "candidate",
+      "meaning": "AI region 순회 중 player/region 인덱스",
+      "limits": "실제 값·AI region 효과 미관측"
+    },
+    "current_campaign_mission": {
+      "offset": "0x10B0D08",
+      "type": "pointer64 -> opaque mission record",
+      "status": "candidate",
+      "meaning": "current_campaign_mission.",
+      "limits": "캠페인·UMS 경기는 실게임으로 확인하지 않았다"
+    },
+    "is_custom_single_player": {
+      "offset": "0x10B0D10",
+      "type": "u32",
+      "status": "validated",
+      "meaning": "custom single-player 상태(current_campaign_mission +8).",
+      "limits": "실제 모드 전이·값 미관측"
+    },
+    "local_game_result": {
+      "offset": "0x106A7A8",
+      "type": "u32",
+      "status": "validated",
+      "meaning": "local_game_result code(1이면 single_player_map_end).",
+      "limits": "1 승리·2 패배만 관측. 무승부·나가기 값 미관측, 경기 종료 직후 갱신 시점은 lease가 없어 직접 보지 못함"
+    },
+    "targeted_order_state": {
+      "offsets": [
+        "0x10A4AA0",
+        "0x10A4AA1",
+        "0x10A4AA2",
+        "0x10A4AA3"
+      ],
+      "type": "u8 each",
+      "status": "candidate",
+      "meaning": "is_targeting 및 unit/ground/fow order byte",
+      "limits": "order byte 값·공개 CommandKind 대응·실제 타기팅 효과 미관측"
+    },
+    "map_pixel_dimensions": {
+      "offsets": [
+        "0xED3B7C",
+        "0xED3B88"
+      ],
+      "type": "u16 width/height",
+      "status": "candidate",
+      "meaning": "지도 픽셀 폭·높이 전역",
+      "limits": "BWGame 타일 치수와 별도 저장 위치. 실제 지도 값 미관측"
+    },
+    "screen_pixel_coordinates": {
+      "offsets": [
+        "0xED3BC0",
+        "0xED3BC4"
+      ],
+      "type": "u32 x/y",
+      "status": "validated",
+      "meaning": "화면 왼쪽 위 map pixel(screen_x/y). validated viewport_x/y(0xED3BB8)와의 관계는 실게임 대조가 필요하다.",
+      "limits": "0xED3BB8과 동일 값이 아닌 경우(SD/HD 전환 등)는 미관측"
+    },
+    "game_screen_size_bwpx": {
+      "offsets": [
+        "0xDADDC0",
+        "0xDADDC4"
+      ],
+      "type": "u32 width/height",
+      "status": "validated",
+      "meaning": "game_screen_width/height_bwpx: 화면에 보이는 map pixel 크기(4:3 기본 zoom 640, 16:9·축소 시 증가).",
+      "limits": "실게임 값 미관측"
+    },
+    "game_screen_height_ratio": {
+      "offset": "0xDADDCC",
+      "type": "f32",
+      "status": "validated",
+      "meaning": "창 높이 중 게임 화면 비율(보통 약 0.8).",
+      "limits": "실게임 값 미관측. +0xDADDC8 u32는 미명명"
+    },
+    "zoom": {
+      "offset": "0xDADDD0",
+      "type": "f32",
+      "status": "validated",
+      "meaning": "카메라 zoom 배율(f32).",
+      "limits": "실게임 값·zoom action(0xDADDD4..) 미관측"
+    },
+    "net_player_id_maps": {
+      "offsets": [
+        "0x1090878",
+        "0x10908A8"
+      ],
+      "type": "inline u32 indexed arrays",
+      "status": "candidate",
+      "meaning": "net_player_to_unique/net_player_to_game.",
+      "limits": "배열 길이·매핑 값·실제 네트워크 플레이어 연결 미관측"
+    },
+    "net_player_flags": {
+      "offset": "0x10908E8",
+      "type": "inline u32 indexed array",
+      "status": "candidate",
+      "meaning": "net_player_flags.",
+      "limits": "배열 길이·각 bit의 전체 의미·실제 값 미관측"
+    },
+    "in_lobby_or_game": {
+      "offset": "0x10920C0",
+      "type": "u32",
+      "status": "candidate",
+      "meaning": "in_lobby_or_game 상태값.",
+      "limits": "가능한 전체 상태값·로비/게임 전이·실제 값 미관측"
+    },
+    "team_game_teams": {
+      "offset": "0x109201D",
+      "type": "u8 within copied 32-byte block",
+      "status": "candidate",
+      "meaning": "team_game_teams byte",
+      "limits": "단일 byte 소비만 확인. 팀 수·값별 의미·실제 팀 게임 효과 미관측"
+    },
+    "original_chk_player_types": {
+      "offset": "0x10907D8",
+      "type": "inline 12-byte block; qword+dword copy",
+      "status": "candidate",
+      "meaning": "original_chk_player_types.",
+      "limits": "포인터나 8-byte 항목으로 취급하지 않음. 각 byte의 슬롯별 의미·실제 CHK 값 미관측"
+    },
+    "active_order_count": {
+      "offset": "0xE76948",
+      "type": "u32",
+      "status": "validated",
+      "meaning": "활성 native Order 수.",
+      "limits": "실제 수·명령 실행 결과 미관측. 외부 BWRAPI mailbox와 별개"
+    },
+    "sprite_array_pointer": {
+      "offset": "0xE76C70",
+      "type": "pointer64 -> sprite records stride 0x48",
+      "status": "validated",
+      "meaning": "native sprite 배열 포인터.",
+      "limits": "배열 용량 미관측"
+    },
+    "sprite_hlines": {
+      "offset": "0xE76C90",
+      "type": "pointer64[256]",
+      "status": "candidate",
+      "meaning": "지도 y행별 sprite 연결 목록 시작 포인터",
+      "limits": "실제 행 포인터·목록 내용 미관측"
+    },
+    "sprite_hlines_end": {
+      "offset": "0xE77490",
+      "type": "pointer64[256]",
+      "status": "candidate",
+      "meaning": "지도 y행별 sprite 연결 목록 끝 포인터",
+      "limits": "후속 읽기·쓰기와 실제 행 포인터 미관측"
+    },
+    "image_array_pointer": {
+      "offset": "0xE61C08",
+      "type": "pointer64 -> image records, init stride 0x58",
+      "status": "validated",
+      "meaning": "native image 배열 포인터.",
+      "limits": "배열 용량 미관측"
+    },
+    "weapon_explosion_type_table": {
+      "offset": "0xE5E880",
+      "type": "u8 indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "무기 폭발 종류; 값5는 Nuclear_Missile 분기",
+      "limits": "저장 PE 첫32B는0; 런타임 표값·writer 미관측. 0xE5E6D0 피해 종류 표와 구분"
+    },
+    "weapon_damage_upgrade_table": {
+      "offset": "0xE5E640",
+      "type": "u8 indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "탄환 일반 피해 경로의 소유자 upgrade ID",
+      "limits": "저장 PE 첫32B는0; 런타임 표값·writer 미관측"
+    },
+    "weapon_base_damage_table": {
+      "offset": "0xE5EC40",
+      "type": "u16 indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "탄환 일반 피해 경로의 기본 피해",
+      "limits": "저장 PE 첫32B는0; 런타임 표값·writer 미관측"
+    },
+    "weapon_damage_level_bonus_table": {
+      "offset": "0xE5ED50",
+      "type": "u16 indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "탄환 일반 피해 경로의 upgrade 레벨당 보너스",
+      "limits": "저장 PE 첫32B는0; 런타임 표값·writer 미관측"
+    },
+    "unit_base_armor_table": {
+      "offset": "0xE5AB30",
+      "type": "u8 indexed by unit type",
+      "status": "candidate",
+      "meaning": "피해 적용의 타입별 기본 방어력",
+      "limits": "저장 PE 첫32B는0; 런타임 표값·writer 미관측"
+    },
+    "unit_armor_upgrade_id_table": {
+      "offset": "0xE5A950",
+      "type": "u8 indexed by unit type",
+      "status": "candidate",
+      "meaning": "방어력 upgrade level 조회 ID",
+      "limits": "저장 PE 첫32B는0; 런타임 표값·writer 미관측"
+    },
+    "unit_size_table": {
+      "offset": "0xE5AA40",
+      "type": "u8 indexed by unit type",
+      "status": "candidate",
+      "meaning": "방어력 차감 뒤 크기별 피해 처리 입력",
+      "limits": "저장 PE 첫32B는0; 런타임 표값·writer 및 최종 피해 미관측"
+    },
+    "weapon_damage_type_table": {
+      "offset": "0xE5E6D0",
+      "type": "u8 indexed by weapon ID",
+      "status": "candidate",
+      "meaning": "무기 피해 종류; 대상 크기 배율의 입력이며 값4는 Ignore_Armor",
+      "limits": "저장 PE 첫32B는0; 런타임 값·writer 미관측. 0xE5E880 폭발 종류 표와 구분"
+    },
+    "damage_kind_size_factor_table": {
+      "offset": "0xDB1658",
+      "type": "u32 indexed by kind*5+target_size",
+      "status": "candidate",
+      "meaning": "방어력 차감 후 raw 피해의 종류·크기 배율",
+      "limits": "저장 PE 첫32B는 비영값 포함; 런타임 표 전체와 enum 의미·실제 피해 미관측"
+    },
+    "session_is_in_game": {
+      "offset": "0xDAF178",
+      "type": "u32",
+      "status": "validated"
+    },
+    "session_is_replay": {
+      "offset": "0xDAB1D8",
+      "type": "u32",
+      "status": "validated"
+    },
+    "session_paused": {
+      "offset": "0xE7FA7C",
+      "type": "u8",
+      "status": "validated"
+    },
+    "network_in_match": {
+      "offset": "0x10908DC",
+      "source": "is_multiplayer",
+      "type": "u8",
+      "values": "0..1",
+      "status": "validated"
+    },
+    "latency_raw": {
+      "offset": "0x10924A8",
+      "source": "net_user_latency",
+      "type": "u32",
+      "values": "0..2",
+      "status": "validated"
+    },
+    "builtin_turn_latency": {
+      "offset": "0x10908D8",
+      "type": "u32",
+      "status": "validated"
+    },
+    "sync_active": {
+      "offset": "0x10924A4",
+      "type": "u32",
+      "values": "0=false, nonzero=true",
+      "status": "validated"
+    },
+    "latency_frames": {
+      "derived": "builtin_turn_latency + (sync_active != 0 ? latency_raw : 0)",
+      "type": "u32",
+      "status": "validated"
+    },
+    "turn_rate": {
+      "offset": "0x1091FCC",
+      "type": "u32",
+      "accepted_values": "0, 2..24",
+      "status": "validated"
+    },
+    "game_speed_index": {
+      "offset": "0x10C53A8",
+      "derived": "u32 at (*(module + offset) + 8)",
+      "status": "validated",
+      "meaning": "게임 속도 index.",
+      "limits": "값 6만 관측했다. 다른 속도 전이는 미측정"
+    },
+    "replay_header_frame_count": {
+      "offset": "0x1095871",
+      "type": "u32",
+      "status": "validated",
+      "meaning": "ReplayHeader +1의 unaligned u32 frame 수. isReplay 조건 없이 일반 경기에서도 유지된다.",
+      "limits": "현재 재생 frame이나 non-replay=0으로 대체할 수 없다. 검증 범위는 일반 경기이며 replay 로드는 미측정"
+    },
+    "initial_game_seed": {
+      "offset": "0x1095878",
+      "type": "u32",
+      "status": "validated",
+      "meaning": "ReplayHeader +8의 초기 random seed. RNG 초기화와 header 저장에 같은 값을 쓴다.",
+      "limits": "경기를 다시 시작하면 값이 바뀐다. replay 로드 전이는 미측정"
+    },
+    "current_rng_state": {
+      "offset": "0x10936A0",
+      "type": "u32",
+      "status": "candidate"
+    },
+    "turn_send_count": {
+      "offset": "0xDDF340",
+      "type": "u32",
+      "status": "candidate"
+    },
+    "local_storm_player_pointer": {
+      "offset": "0xDDF518",
+      "type": "tagged pointer",
+      "status": "candidate"
+    },
+    "game_speed_delay_table": {
+      "offset": "0xDCF050",
+      "type": "u32[7]",
+      "status": "validated",
+      "meaning": "속도 index별 기본 delay(ms) 표: 167, 111, 83, 67, 56, 48, 42.",
+      "limits": "기본표이며 override 적용 후 엔진 delay를 뜻하지 않는다"
+    },
+    "game_speed_override_index": {
+      "offset": "0xE7DF70",
+      "type": "u32",
+      "status": "candidate"
+    },
+    "next_engine_step_tick": {
+      "offset": "0x1067D08",
+      "type": "u32",
+      "status": "candidate"
+    },
+    "local_minerals": {
+      "offset": "0x10A4388",
+      "type": "i32",
+      "status": "validated",
+      "semantic_note": "스칼라 미러이며 런타임이 선택한 BWGame 자원 테이블보다 늦을 수 있음"
+    },
+    "local_gas": {
+      "offset": "0x10A438C",
+      "type": "i32",
+      "status": "validated",
+      "semantic_note": "스칼라 미러이며 런타임이 선택한 BWGame 자원 테이블보다 늦을 수 있음"
+    },
+    "supply_table": {
+      "offset": "0xECE180",
+      "entry_stride": "0x4",
+      "status": "candidate",
+      "semantic_note": "경기 전환 뒤 이전 경기 값이 남는 module mirror. 공급량 원천에서 쓰지 않고 현재 BWGame+0x3054를 사용한다."
+    },
+    "completed_unit_count_table": {
+      "offset": "0xECE360",
+      "status": "validated"
+    },
+    "player_identity_table": {
+      "offset": "0x1095911",
+      "entry_stride": "0x24",
+      "entries": 8,
+      "status": "validated"
+    },
+    "current_player_id_cluster": {
+      "offset": "0xDD5B50",
+      "value_offsets": [
+        "0x0",
+        "0x4",
+        "0xC",
+        "0x10"
+      ],
+      "status": "validated"
+    },
+    "end_game": {
+      "offset": "0x3072F0",
+      "type": "function(u32 code)",
+      "status": "validated",
+      "meaning": "stores the end code, clears the game-loop byte 0x1067D0D and runs the game's end of game; the game menu's quit passes 4"
+    },
+    "replay_show_entire_map": {
+      "offset": "0x1095860",
+      "type": "u32",
+      "status": "validated",
+      "meaning": "official GameImpl::setRevealAll replay-only flag"
+    },
+    "viewport_x": {
+      "offset": "0xED3BB8",
+      "type": "i32",
+      "status": "validated"
+    },
+    "viewport_y": {
+      "offset": "0xED3BBC",
+      "type": "i32",
+      "status": "validated"
+    },
+    "viewport_max_x": {
+      "offset": "0xED3B74",
+      "type": "i32",
+      "status": "validated",
+      "meaning": "viewport X 상한. SetScreenPosition이 좌표를 제한할 때 쓴다."
+    },
+    "viewport_max_y": {
+      "offset": "0xED3B78",
+      "type": "i32",
+      "status": "validated",
+      "meaning": "viewport Y 상한. SetScreenPosition이 좌표를 제한할 때 쓴다."
+    },
+    "active_tile_pointer": {
+      "offset": "0xE7E460",
+      "type": "pointer",
+      "status": "validated"
+    },
+    "sai_pathing_pointer": {
+      "offset": "0x1097780",
+      "type": "pointer",
+      "status": "validated"
+    },
+    "bullet_root_block": {
+      "offset": "0xE5F660",
+      "bytes": "0x50",
+      "status": "validated"
+    },
+    "command_selection_table": {
+      "offset": "0x10907F0",
+      "status": "validated"
+    },
+    "ui_selection_table": {
+      "offset": "0x10A1E20",
+      "status": "validated"
+    },
+    "player_selections_table": {
+      "offset": "0x10A1B20",
+      "type": "Unit* [8 command players][12], record+0x10 pointers; local on-screen row (ui_selection_table) follows",
+      "status": "validated",
+      "meaning": "전 플레이어 현재 유닛 선택.",
+      "limits": "행은 storm id가 아니라 명령 player 기준(싱글플레이 game player id와 같음). 멀티플레이 unique id 대응은 미검증. 컴퓨터 AI는 선택 명령을 쓰지 않아 빈 행"
+    },
+    "chat_box_mode": {
+      "offset": "0x10A4AB0",
+      "type": "u8",
+      "status": "validated",
+      "meaning": "채팅 입력 박스 스코프: 0 닫힘, 1 싱글플레이 로컬, 2 전체, 3 동맹, 4 특정 플레이어, 5 관전자. 현재 코드는 0이 아닌지(열림)만 쓴다.",
+      "limits": "값 4·5는 실게임 미관측"
+    },
+    "replay_header": {
+      "offset": "0x1095870",
+      "bytes": "0x279",
+      "type": "ReplayHeader (is_bw u8, end_frame u32, campaign u16, save_data_command[0xD], BwGameData 0x8D, Player[12] 0x24, ai names u32[8], ums slots u8[8])",
+      "status": "validated",
+      "meaning": "기록·재생 중인 replay header. validated replay_header_frame_count(+1)·initial_game_seed(+8)·player_identity_table(+0xA1)가 이 안에 있다.",
+      "limits": "end_frame·is_bw는 경기 중 0이고 종료 때 채워진다. 컴퓨터 이름은 CP949 bytes"
+    },
+    "replay_data_pointer": {
+      "offset": "0x1093AB0",
+      "type": "pointer64 -> ReplayData 0x30: +0 recording u32, +8 data_start, +0x10 data_length u32(기록 중 쓰기 위치), +0x14 capacity u32, +0x18 기록 중인 블록 body 포인터, +0x20 그 블록 frame, +0x28 data_pos(재생 읽기 위치)",
+      "status": "validated",
+      "meaning": "replay 명령 기록·재생 버퍼. 자료는 `u32 frame, u8 length, {u8 storm_player, u8 cmd[]}` 블록",
+      "limits": "재할당(용량 0xC350 초과) 시점은 미관측. 재생 cursor는 실행 전 블록을 하나 앞서 읽는다"
+    },
+    "storm_players": {
+      "offset": "0x10931B0",
+      "type": "inline StormPlayer[12] stride 0x68 (+0 state u8, +2 flags u16, +6 protocol u16, +8 name[0x60])",
+      "status": "candidate",
+      "meaning": "로비 네트워크 플레이어 명단.",
+      "limits": "멀티플레이 값 미관측"
+    },
+    "lobby_state": {
+      "offset": "0x1090690",
+      "type": "u8",
+      "status": "candidate",
+      "meaning": "로비 상태 값(4 slot setup, 8 시작 준비).",
+      "limits": "값 전체 의미·싱글 사용자 지정 경기에서의 전이 미관측"
+    },
+    "sprite_record_layout_scr_x64": {
+      "basis": "native Sprite stride 0x48",
+      "offsets": "+0 prev, +8 next, +0x10 sprite_id u16, +0x12 player, +0x14 visibility, +0x15 elevation, +0x16 flags, +0x18 index u16, +0x1A width, +0x1B height, +0x20/+0x28 위치(암호화되어 평문 아님), +0x30 main image, +0x38 first image, +0x40 last image",
+      "status": "validated",
+      "meaning": "SCR x64 Sprite.",
+      "limits": "+0x20/+0x28 위치 값은 SCR에서 인코딩돼 있어 쓰지 않는다(위치는 main image +0x24)"
+    },
+    "image_record_layout_scr_x64": {
+      "basis": "native Image stride 0x58",
+      "offsets": "+0 prev, +8 next, +0x10 image_id u16, +0x12 drawfunc, +0x13 direction, +0x14 flags u16, +0x16/+0x17 x/y offset i8, +0x18 iscript header·pos·return, +0x1E animation, +0x1F wait, +0x20 frameset u16, +0x22 frame u16, +0x24/+0x26 map position i16, +0x28 screen position, +0x50 parent Sprite*",
+      "status": "validated",
+      "meaning": "SCR x64 Image.",
+      "limits": "drawfunc·direction·flags 값별 의미 미관측"
+    },
+    "live_players_table_pointer": {
+      "offsets": [
+        "0xE42AFC",
+        "0x1091F60"
+      ],
+      "type": "XOR-stored pointer: (0x3CDB939D3F07AAA4 - Mem64[0xE42AFC]) ^ Mem64[0x1091F60] -> Player[12] stride 0x24",
+      "status": "validated",
+      "meaning": "`players`(live player table). 경기 중에는 0x1095911 header 사본과 같다",
+      "limits": "로비 슬롯 설정 원천(game_lobby 객체) 미확인. 캠페인 Zerg 1에는 type 7 행이 있었다"
+    },
+    "race_randomizer": {
+      "offset": "0x39D760",
+      "type": "function void(void), 14-byte prologue mov r11,rsp; push rbp/rsi/rdi/r12-r15",
+      "status": "validated",
+      "meaning": "SCR 종족 무작위 결정(BWAPI RandomizePlayerRaces). live players 행(+4 storm, +8 type, +9 race, +0xA force)을 8개 읽고 race 7→6, type 2/5의 race 6은 균형 추첨, 그 밖의 race 6은 즉시 추첨해 +9에 쓴다.",
+      "limits": "rng_enable(0x10936AC) 상태는 정적으로 미확정. 고정 Z/T/P 로비 종족의 frame 0 공개는 로비 드롭다운을 마우스로만 바꿀 수 있어 실게임 미검증"
+    },
+    "storm_lobby_races": {
+      "offset": "0x1094300",
+      "type": "u8[8] indexed by storm id",
+      "status": "validated",
+      "meaning": "무작위 결정 전 로비 종족(storm id별). 무작위 결정 호출마다 7로 초기화 후 storm id<8 행을 채운다.",
+      "limits": "type 검사 없음"
+    },
+    "selection_hotkey_last_used_frames": {
+      "offset": "0x106AF00",
+      "type": "u16[8][8]",
+      "status": "candidate",
+      "meaning": "선택 hotkey 마지막 사용 frame(플레이어별 8개).",
+      "limits": "index 의미·실게임 값 미관측"
+    },
+    "play_sound": {
+      "offset": "0x3E2C50",
+      "type": "function u32(u32 id, f32 volume, Unit*, i32* x, i32* y)",
+      "status": "candidate",
+      "meaning": "효과음 재생(GameData 확장 명령 20 PlaySound). id는 sfx_count 미만이어야 한다(넘으면 crash)",
+      "limits": "실게임 재생 미검증. volume 범위 의미 미확인"
+    },
+    "lookup_sound_id": {
+      "offset": "0x267840",
+      "type": "function u32(const BwString*)",
+      "status": "candidate",
+      "meaning": "sfx 이름→id. PlaySound는 이 함수를 부르지 않는다(모르는 이름 crash 위험; 이름은 SDK sfx 표로 id 변환)",
+      "limits": "모르는 이름의 반환값은 미확인이며 crash할 수 있다"
+    },
+    "sfx_data": {
+      "offsets": [
+        "0xEAEC08",
+        "0xEAEC10"
+      ],
+      "type": "u64 pointer to entries of 0xF8, u64 count",
+      "status": "validated",
+      "meaning": "sfx 표와 개수(PlaySound id 범위 검사)",
+      "limits": "실게임 값 미관측"
+    },
+    "first_ai_script": {
+      "offset": "0xEAEBF0",
+      "type": "pointer64 -> AiScript list (0x48, +0 next)",
+      "status": "validated",
+      "meaning": "AI script 목록",
+      "limits": "필드별 의미는 배치만 따르며 개별 값 대조는 하지 않았다"
+    },
+    "active_ai_towns": {
+      "offset": "0xEACF00",
+      "type": "AiListHead[8] stride 0x10 (+8 first) -> AiTown (0x200, +0 next)",
+      "status": "validated",
+      "meaning": "플레이어별 AI town 목록",
+      "limits": "town 필드별 의미 대조는 하지 않았다"
+    },
+    "ai_unit_strength": {
+      "offset": "0xEB2AC0",
+      "type": "u32[2][228]",
+      "status": "validated",
+      "meaning": "유닛 타입별 지상·공중 strength",
+      "limits": "다른 타입 값 대조는 하지 않았다"
+    },
+    "path_array": {
+      "offsets": [
+        "0x10A1878",
+        "0x10A1870"
+      ],
+      "type": "pointer64 -> Path[0x400] (0x80); first_free_path Path* (qword)",
+      "status": "validated",
+      "meaning": "유닛 경로 배열과 빈 목록. Unit+0x188 = CUnit record+0x198 = Path*",
+      "limits": "Path 필드별 의미 대조는 하지 않았다"
+    },
+    "dcreep_timers": {
+      "offsets": [
+        "0x10B0C14",
+        "0x10B0C18"
+      ],
+      "type": "u32 dcreep_next_update, u32 dcreep_unit_next_update",
+      "status": "candidate",
+      "meaning": "사라지는 creep 갱신 timer",
+      "limits": "실게임 미관측"
+    },
+    "dcreep_lists": {
+      "offsets": [
+        "0x10B0BB0",
+        "0x10A4BB0"
+      ],
+      "type": "list heads 0x50 bytes (free head +0x48); pool 0x400 x 0x28",
+      "status": "candidate",
+      "meaning": "사라지는 creep 목록과 pool",
+      "limits": "활성 head가 9개 목록인지 미확인"
+    },
+    "creep_tile_buffers": {
+      "offsets": [
+        "0x10C8378",
+        "0x10C8380",
+        "0x10C8388"
+      ],
+      "type": "pointer64 -> u16[w*h] original tiles; pointer64 -> u8[w*h] borders; u32 pair dimensions",
+      "status": "candidate",
+      "meaning": "creep 원래 tile·경계 buffer",
+      "limits": "0x10C8388/0x10C838C의 폭·높이 순서 미확인(곱을 BWGame+0xE4와 대조)"
+    }
+  },
+  "player_identity_entry": {
+    "stride": "0x24",
+    "fields": {
+      "id": {
+        "offset": "0x0",
+        "type": "u32"
+      },
+      "storm_id": {
+        "offset": "0x4",
+        "type": "u32"
+      },
+      "type": {
+        "offset": "0x8",
+        "type": "u8"
+      },
+      "race": {
+        "offset": "0x9",
+        "type": "u8"
+      },
+      "team_id": {
+        "offset": "0xA",
+        "type": "u8"
+      },
+      "name_raw": {
+        "offset": "0xB",
+        "type": "raw_bytes",
+        "bytes": 25,
+        "nul_terminated": true,
+        "status": "validated"
+      }
+    }
+  },
+  "bwgame": {
+    "root": {
+      "address": "runtime_discovered",
+      "alignment": "0x10",
+      "read_bytes": "0x10351",
+      "status": "validated"
+    },
+    "fields": {
+      "supply_table": {
+        "offset": "0x3054",
+        "type": "i32[3 races][3 kinds][12 player slots]",
+        "bytes": "0x1B0",
+        "status": "validated",
+        "meaning": "Zerg/Terran/Protoss 순서, 각 available/used/max. 공개 총량=min(available,max), used_by_race는 각 종족 used다.",
+        "limits": "검증된 현재 root·frame·slot binding과 공개 플레이어 종족 일치가 필요하다. module mirror fallback은 없다.",
+        "evidence": "crates/engine/src/decode/bwgame.rs"
+      },
+      "minerals": {
+        "offset": "0x0",
+        "type": "player_i32_table"
+      },
+      "gas": {
+        "offset": "0x30",
+        "type": "player_i32_table"
+      },
+      "cumulative_gas": {
+        "offset": "0x60",
+        "type": "player_i32_table"
+      },
+      "cumulative_minerals": {
+        "offset": "0x90",
+        "type": "player_i32_table"
+      },
+      "player_slot_types": {
+        "offset": "0xC4",
+        "type": "u8[12]"
+      },
+      "player_slot_races": {
+        "offset": "0xD0",
+        "type": "u8[12]"
+      },
+      "map_width": {
+        "offset": "0xE4",
+        "type": "u16"
+      },
+      "map_height": {
+        "offset": "0xE6",
+        "type": "u16"
+      },
+      "map_tileset": {
+        "offset": "0xEC",
+        "type": "u16",
+        "status": "validated",
+        "meaning": "지도 tileset ID.",
+        "limits": "다른 tileset 맵은 미대조(캠페인 Jungle은 lease 없음)"
+      },
+      "armor_level_mode_byte": {
+        "offset": "0x10350",
+        "type": "u8",
+        "status": "candidate",
+        "meaning": "방어력·seekRange 등의 공통 분기 조건; 정확한 의미 미확정",
+        "limits": "전역·helper 반환6/7의 의미와 쓰기 경로 우선순위, 실제 값 미관측. 특정 게임 모드 플래그로 확정하지 않음"
+      },
+      "active_player_count": {
+        "offset": "0xF1",
+        "type": "u8"
+      },
+      "player_vision": {
+        "offset": "0xFC",
+        "type": "u32[12]",
+        "index": "slot*4",
+        "status": "validated",
+        "meaning": "현재 플레이어의 시야 mask 입력; 공개 계산은 하위 u16"
+      },
+      "frame_count": {
+        "offset": "0x14C",
+        "type": "u32"
+      },
+      "saved_elapsed": {
+        "offset": "0x150",
+        "type": "u32",
+        "unknown_sentinel": "0xFFFFFFFF",
+        "condition": "scr-1450000-observation-layout-v1: native save 이후 같은 gate/root/frame의 UINT32_MAX는 elapsed unknown으로 보존한다. 다른 범위 오류는 허용하지 않으며 scanner motion 근거로 사용하지 않는다.",
+        "meaning": "저장된 경기 경과 시간. unknown_sentinel(UINT32_MAX)은 elapsed unknown으로 보존한다.",
+        "limits": "일반 경기 첫 frame에서 같은 값이 나오는 원인은 미확인"
+      },
+      "player_unit_availability": {
+        "offset": "0x18C",
+        "row_bytes": 228
+      },
+      "map_file_name": {
+        "offset": "0xC4C"
+      },
+      "map_title": {
+        "offset": "0xD50"
+      },
+      "player_color_index": {
+        "offset": "0x2CE6"
+      },
+      "player_left": {
+        "offset": "0x2C72",
+        "type": "C++ bool[8]",
+        "status": "validated",
+        "meaning": "플레이어별 이탈 여부(bool[8])"
+      },
+      "player_unit_total_count": {
+        "offset": "0x2CF4"
+      },
+      "player_unit_produced_count": {
+        "offset": "0x2D24"
+      },
+      "player_unit_owned_count": {
+        "offset": "0x2D54"
+      },
+      "player_unit_lost_count": {
+        "offset": "0x2D84"
+      },
+      "player_unit_killed_count": {
+        "offset": "0x2DB4"
+      },
+      "player_score_unit": {
+        "offset": "0x2DE4"
+      },
+      "player_score_kill": {
+        "offset": "0x2E14"
+      },
+      "player_building_total_count": {
+        "offset": "0x2E44"
+      },
+      "player_building_constructed_count": {
+        "offset": "0x2E74"
+      },
+      "player_building_owned_count": {
+        "offset": "0x2EA4"
+      },
+      "player_building_lost_count": {
+        "offset": "0x2ED4"
+      },
+      "player_building_razed_count": {
+        "offset": "0x2F04"
+      },
+      "player_score_building": {
+        "offset": "0x2F34"
+      },
+      "player_score_razing": {
+        "offset": "0x2F64"
+      },
+      "player_factory_constructed_count": {
+        "offset": "0x2F94"
+      },
+      "player_factory_owned_count": {
+        "offset": "0x2FC4"
+      },
+      "player_factory_lost_count": {
+        "offset": "0x2FF4"
+      },
+      "player_factory_razed_count": {
+        "offset": "0x3024"
+      },
+      "player_score_custom": {
+        "offset": "0x3204"
+      },
+      "unit_count_all": {
+        "offset": "0x3234",
+        "index": "type*0x30+player*4",
+        "status": "validated"
+      },
+      "unit_count_completed": {
+        "offset": "0x5CF4",
+        "index": "type*0x30+player*4",
+        "status": "validated"
+      },
+      "unit_count_killed": {
+        "offset": "0x87B4",
+        "index": "type*0x30+player*4",
+        "status": "validated"
+      },
+      "unit_count_dead": {
+        "offset": "0xB274",
+        "index": "type*0x30+player*4",
+        "status": "validated"
+      },
+      "tech_available_sc": {
+        "offset": "0xDD34"
+      },
+      "tech_researched_sc": {
+        "offset": "0xDE54"
+      },
+      "upgrade_max_sc": {
+        "offset": "0xDF98"
+      },
+      "upgrade_current_sc": {
+        "offset": "0xE1C0"
+      },
+      "player_force_id": {
+        "offset": "0xE4C0"
+      },
+      "force_names": {
+        "offset": "0xE4CC",
+        "type": "u8[4][30]",
+        "status": "validated"
+      },
+      "player_alliances": {
+        "offset": "0xE544",
+        "meaning": "u8[12][12] 동맹 행렬(0 적, 1 동맹, 2 동맹 승리).",
+        "status": "validated",
+        "limits": "동맹 변경·shared vision 부여는 미관측"
+      },
+      "countdown_seconds": {
+        "offset": "0xE604"
+      },
+      "elapsed_time": {
+        "offset": "0xE608",
+        "type": "u32 seconds",
+        "status": "validated",
+        "meaning": "경기 경과 초. 일시정지 중에는 고정되고 진행 중에는 늘며 공개 값과 일치한다."
+      },
+      "player_victory_status": {
+        "offset": "0xE610",
+        "type": "u8[8]",
+        "status": "validated"
+      },
+      "remaining_game_pauses": {
+        "offset": "0xE628",
+        "type": "u8[8]",
+        "status": "validated"
+      },
+      "start_positions": {
+        "offset": "0xE630"
+      },
+      "tech_available_bw": {
+        "offset": "0xFF60"
+      },
+      "tech_researched_bw": {
+        "offset": "0x10050"
+      },
+      "tech_researching": {
+        "offset": "0x10140",
+        "player_stride": "0x6",
+        "index": "one bitset per player, indexed by the full tech id"
+      },
+      "upgrade_max_bw": {
+        "offset": "0x10188"
+      },
+      "upgrade_current_bw": {
+        "offset": "0x1023C"
+      },
+      "player_randomization": {
+        "offset": "0x12C",
+        "type": "u32[8] final slot -> original slot (BWAPI playerRandomizerMap)",
+        "status": "candidate",
+        "meaning": "BWAPI playerRandomizerMap.",
+        "limits": "실경기에서 쓰는 코드 미발견"
+      },
+      "selection_hotkeys": {
+        "offset": "0xD70",
+        "type": "s32[8][18][12] (0x1B00)",
+        "status": "candidate",
+        "meaning": "선택 hotkey. 10~17은 선택 기록으로 추정, SCR x64 값 인코딩 미확인",
+        "limits": "값 인코딩 실게임 미검증"
+      },
+      "ums_trigger_state": {
+        "offset": "0xE5D4",
+        "type": "bytes [0xE5D4, 0xFF60): objectives, countdown, switches, victory, leaderboard, pauses, start positions, locations 64+255, timer pause",
+        "status": "validated",
+        "meaning": "UMS trigger 현재 상태",
+        "limits": "실게임 미검증"
+      }
+    }
+  },
+  "cunit": {
+    "region": {
+      "address": "runtime_discovered",
+      "bytes": "0x1A0000",
+      "record_capacity": 3400,
+      "status": "validated"
+    },
+    "record_stride": "0x1E8",
+    "read_window": "0x3D0",
+    "selection_pointer_adjustment": "0x10",
+    "fields": {
+      "hit_points_raw": {
+        "offset": "0x20",
+        "type": "i32"
+      },
+      "resource_cargo_kind": {
+        "offset": "0x154",
+        "status": "validated",
+        "meaning": "일꾼이 운반하는 자원 종류: 0 없음, 1 가스, 2 미네랄.",
+        "limits": "u8(worker_resource_type과 같은 칸). reader는 일꾼에서 1/2만 공개하고 0은 None이며, is_carrying_resource도 이 칸(0이 아님)으로 판정한다."
+      },
+      "sprite_ptr": {
+        "offset": "0x28",
+        "type": "pointer"
+      },
+      "move_target_x": {
+        "offset": "0x30",
+        "type": "i16"
+      },
+      "move_target_y": {
+        "offset": "0x32",
+        "type": "i16"
+      },
+      "move_target_unit_ptr": {
+        "offset": "0x38",
+        "type": "pointer"
+      },
+      "next_movement_waypoint_x": {
+        "offset": "0x40",
+        "type": "i16"
+      },
+      "next_movement_waypoint_y": {
+        "offset": "0x42",
+        "type": "i16"
+      },
+      "next_target_waypoint_x": {
+        "offset": "0x44",
+        "type": "i16"
+      },
+      "next_target_waypoint_y": {
+        "offset": "0x46",
+        "type": "i16"
+      },
+      "movement_flags": {
+        "offset": "0x48",
+        "type": "u8"
+      },
+      "current_direction": {
+        "offset": "0x49",
+        "type": "u8"
+      },
+      "turn_radius": {
+        "offset": "0x4A",
+        "type": "u8"
+      },
+      "velocity_direction": {
+        "offset": "0x4B",
+        "type": "u8"
+      },
+      "flingy_id": {
+        "offset": "0x4C",
+        "type": "u16"
+      },
+      "flingy_movement_type": {
+        "offset": "0x4F",
+        "type": "u8"
+      },
+      "position_x": {
+        "offset": "0x50",
+        "type": "i16"
+      },
+      "position_y": {
+        "offset": "0x52",
+        "type": "i16"
+      },
+      "halt_position_x": {
+        "offset": "0x54",
+        "type": "i32"
+      },
+      "halt_position_y": {
+        "offset": "0x58",
+        "type": "i32"
+      },
+      "flingy_top_speed_raw": {
+        "offset": "0x5C",
+        "type": "u32"
+      },
+      "flingy_current_speed1_raw": {
+        "offset": "0x60",
+        "type": "u32"
+      },
+      "flingy_current_speed2_raw": {
+        "offset": "0x64",
+        "type": "u32"
+      },
+      "velocity_x_raw": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": "1/256"
+      },
+      "velocity_y_raw": {
+        "offset": "0x6C",
+        "type": "i32",
+        "scale": "1/256"
+      },
+      "flingy_acceleration": {
+        "offset": "0x70",
+        "type": "u16"
+      },
+      "current_direction2": {
+        "offset": "0x72",
+        "type": "u8"
+      },
+      "velocity_direction2": {
+        "offset": "0x73",
+        "type": "u8"
+      },
+      "owner_id": {
+        "offset": "0x78",
+        "type": "u8"
+      },
+      "order_id": {
+        "offset": "0x79",
+        "type": "u8"
+      },
+      "order_timer": {
+        "offset": "0x80",
+        "type": "u8"
+      },
+      "ground_weapon_cooldown": {
+        "offset": "0x81",
+        "type": "u8"
+      },
+      "air_weapon_cooldown": {
+        "offset": "0x82",
+        "type": "u8"
+      },
+      "spell_cooldown": {
+        "offset": "0x83",
+        "type": "u8"
+      },
+      "order_target_x": {
+        "offset": "0x88",
+        "type": "i16",
+        "status": "validated"
+      },
+      "order_target_y": {
+        "offset": "0x8A",
+        "type": "i16",
+        "status": "validated"
+      },
+      "order_target_unit_ptr": {
+        "offset": "0x90",
+        "type": "pointer"
+      },
+      "shields_raw": {
+        "offset": "0x98",
+        "type": "u32"
+      },
+      "unit_type_id": {
+        "offset": "0x9C",
+        "type": "u16"
+      },
+      "build_remaining_time": {
+        "offset": "0x100",
+        "type": "u16"
+      },
+      "previous_hit_points_raw": {
+        "offset": "0x102",
+        "type": "u16"
+      },
+      "loaded_unit_index": {
+        "offset": "0x104",
+        "type": "u16",
+        "status": "candidate"
+      },
+      "sub_unit_ptr": {
+        "offset": "0xB0",
+        "type": "pointer"
+      },
+      "order_queue_head": {
+        "offset": "0xB8",
+        "type": "pointer"
+      },
+      "order_queue_tail": {
+        "offset": "0xC0",
+        "type": "pointer"
+      },
+      "connected_unit_ptr": {
+        "offset": "0xD0",
+        "type": "pointer",
+        "status": "validated",
+        "uses": [
+          "transport_or_bunker_parent",
+          "larva_hatchery_parent"
+        ]
+      },
+      "order_queue_count": {
+        "offset": "0xD8",
+        "type": "u8"
+      },
+      "order_queue_timer": {
+        "offset": "0xD9",
+        "type": "u8"
+      },
+      "attack_notify_timer": {
+        "offset": "0xDB",
+        "type": "u8"
+      },
+      "previous_unit_type_id": {
+        "offset": "0xDC",
+        "type": "u16"
+      },
+      "last_event_timer": {
+        "offset": "0xDE",
+        "type": "u8"
+      },
+      "last_event_color": {
+        "offset": "0xDF",
+        "type": "u8"
+      },
+      "rank_increase": {
+        "offset": "0xE2",
+        "type": "u8"
+      },
+      "kill_count": {
+        "offset": "0xE3",
+        "type": "u8"
+      },
+      "last_attacking_player_id": {
+        "offset": "0xE4",
+        "type": "u8"
+      },
+      "secondary_order_timer": {
+        "offset": "0xE5",
+        "type": "u8"
+      },
+      "ai_action_flags": {
+        "offset": "0xE6",
+        "type": "u8"
+      },
+      "user_action_flags": {
+        "offset": "0xE7",
+        "type": "u8"
+      },
+      "button_set_id": {
+        "offset": "0xE8",
+        "type": "u16"
+      },
+      "raw_is_cloaked": {
+        "offset": "0xEA",
+        "type": "u8"
+      },
+      "movement_state": {
+        "offset": "0xEB",
+        "type": "u8"
+      },
+      "build_queue_type": {
+        "offset": "0xEC",
+        "type": "u16[5]",
+        "status": "validated"
+      },
+      "energy_raw": {
+        "offset": "0xF6",
+        "type": "u16"
+      },
+      "build_queue_slot": {
+        "offset": "0xF8",
+        "type": "u8",
+        "status": "validated"
+      },
+      "uniqueness_identifier": {
+        "offset": "0xF9",
+        "type": "u8"
+      },
+      "secondary_order_id": {
+        "offset": "0xFA",
+        "type": "u8",
+        "status": "validated"
+      },
+      "building_overlay_state": {
+        "offset": "0xFB",
+        "type": "u8"
+      },
+      "hit_points_gain_raw": {
+        "offset": "0xFC",
+        "type": "u16"
+      },
+      "shield_gain_raw": {
+        "offset": "0xFE",
+        "type": "u16"
+      },
+      "building_addon_or_hangar_head": {
+        "offset": "0x118",
+        "type": "pointer",
+        "type_gated": true
+      },
+      "building_addon_type_or_hangar_out_head": {
+        "offset": "0x120",
+        "type": "pointer_or_u16",
+        "type_gated": true
+      },
+      "production_remaining_time": {
+        "offset": "0x122",
+        "type": "u16"
+      },
+      "research_tech_type": {
+        "offset": "0x124",
+        "type": "u8"
+      },
+      "upgrade_type": {
+        "offset": "0x125",
+        "type": "u8"
+      },
+      "larva_timer_candidate": {
+        "offset": "0x126",
+        "type": "u8",
+        "status": "validated",
+        "meaning": "라바 생성 타이머. native Unit+0x116과 CUnit record+0x126은 같은 위치다. Hatchery/Lair/Hive 전용(u8). 공식 UnitUpdate.cpp의 remainingTrainTime 공식에서 9프레임 단위 카운트로 소비된다(larvaTimer*9 + ((orderQueueTimer+8)%9)).",
+        "type_gated": true,
+        "limits": "StepGame 전후값은 같은 호출 안의 순 변화만 보여 준다. 정확한 쓰기 RIP·횟수·호출자는 미측정. Lair/Hive에서의 재생성 거동은 미관측(공식 원문은 Hatchery/Lair/Hive를 같은 공식으로 처리). 엔진은 Hatchery/Lair/Hive에 한해 이 값을 읽어 공식 식으로 남은 훈련 frame을 계산한다(연결 라바 3마리 이상이면 0)."
+      },
+      "building_landing_timer": {
+        "offset": "0x127",
+        "type": "u8"
+      },
+      "worker_resource_or_hangar_count": {
+        "offset": "0x128",
+        "type": "pointer_or_u8",
+        "type_gated": true
+      },
+      "building_upgrade_or_hangar_out_count": {
+        "offset": "0x129",
+        "type": "u8",
+        "type_gated": true
+      },
+      "hangar_in_hangar": {
+        "offset": "0x130",
+        "type": "u8",
+        "type_gated": true
+      },
+      "worker_is_carrying_resource": {
+        "offset": "0x132",
+        "type": "u8",
+        "type_gated": true,
+        "status": "validated",
+        "meaning": "이름과 달리 운반 플래그가 아니다. 일꾼이 자원의 채취 슬롯을 잡은 동안 1이고 gather_queue_next에서 0이다. 운반 여부는 +0x154(resource_cargo_kind)가 0이 아닌지로 본다(BWAPI carryResourceType).",
+        "limits": "reader는 이 칸을 더 공개하지 않는다(is_carrying_resource는 +0x154 기준으로 바꿈)."
+      },
+      "worker_resource_carry_count": {
+        "offset": "0x133",
+        "type": "u8",
+        "type_gated": true
+      },
+      "resource_amount_or_relation_ptr": {
+        "offset": "0x138",
+        "type": "u16_or_pointer",
+        "type_gated": true
+      },
+      "resource_gather_queue_count": {
+        "offset": "0x13B",
+        "type": "u8",
+        "type_gated": true
+      },
+      "resource_link_or_silo_nuke": {
+        "offset": "0x140",
+        "type": "pointer",
+        "type_gated": true
+      },
+      "resource_group_or_link": {
+        "offset": "0x148",
+        "type": "u8_or_pointer",
+        "type_gated": true
+      },
+      "status_flags": {
+        "offset": "0x150",
+        "type": "u32"
+      },
+      "worker_resource_type": {
+        "offset": "0x154",
+        "type": "u8",
+        "type_gated": true,
+        "meaning": "BWAPI carryResourceType: 0 없음, 1 가스, 2 광물. resource_cargo_kind와 같은 칸이다.",
+        "limits": "일꾼 전용(type_gated)"
+      },
+      "detection_player_flags": {
+        "offset": "0x158",
+        "type": "u32"
+      },
+      "secondary_order_target_x": {
+        "offset": "0x160",
+        "type": "i16"
+      },
+      "secondary_order_target_y": {
+        "offset": "0x162",
+        "type": "i16"
+      },
+      "build_unit_ptr": {
+        "offset": "0x168",
+        "type": "pointer",
+        "status": "validated"
+      },
+      "rally_position_x": {
+        "offset": "0x180",
+        "type": "i16"
+      },
+      "rally_position_y": {
+        "offset": "0x182",
+        "type": "i16"
+      },
+      "rally_unit_ptr": {
+        "offset": "0x188",
+        "type": "pointer"
+      },
+      "unit_path_ptr": {
+        "offset": "0x198",
+        "type": "pointer",
+        "status": "candidate",
+        "meaning": "path pool 포인터(native Unit+0x188 = record+0x198). setter가 기록하고 해제 시 null로 만든다.",
+        "limits": "record+0x188 rally_unit_ptr과 다른 필드. 실제 pointer/이동 효과 미관측"
+      },
+      "is_being_healed": {
+        "offset": "0x1A3",
+        "type": "u8"
+      },
+      "remove_timer": {
+        "offset": "0x1AC",
+        "type": "u16"
+      },
+      "defense_matrix_damage_raw": {
+        "offset": "0x1AE",
+        "type": "u16",
+        "scale": "1/256"
+      },
+      "defense_matrix_timer": {
+        "offset": "0x1B0",
+        "type": "u8",
+        "status": "validated"
+      },
+      "stim_timer": {
+        "offset": "0x1B1",
+        "type": "u8",
+        "status": "validated"
+      },
+      "ensnare_timer": {
+        "offset": "0x1B2",
+        "type": "u8"
+      },
+      "lockdown_timer": {
+        "offset": "0x1B3",
+        "type": "u8"
+      },
+      "irradiate_timer": {
+        "offset": "0x1B4",
+        "type": "u8"
+      },
+      "stasis_timer": {
+        "offset": "0x1B5",
+        "type": "u8"
+      },
+      "plague_timer": {
+        "offset": "0x1B6",
+        "type": "u8"
+      },
+      "storm_timer": {
+        "offset": "0x1B7",
+        "type": "u8"
+      },
+      "maelstrom_timer": {
+        "offset": "0x1C4",
+        "type": "u8",
+        "status": "validated",
+        "meaning": "Maelstrom 남은 timer. 범위 안 유닛에서 22로 시작해 약 8 frame마다 1씩 줄어 0이 되고, 범위 밖 유닛은 0을 유지한다."
+      }
+    },
+    "status_bits": {
+      "completed": "0x00000001",
+      "in_air": {
+        "marker": "0x00000004",
+        "non_liftable_buildings": false,
+        "lift_capable_terran_buildings": [
+          106,
+          111,
+          113,
+          114,
+          116,
+          122
+        ]
+      },
+      "burrowed": "0x00000010",
+      "in_building": "0x00000020",
+      "in_transport": "0x00000040",
+      "requires_detection": "0x00000100",
+      "cloaked": "0x00000200",
+      "protoss_unpowered": "0x00000400",
+      "cannot_receive_orders": "0x00001000",
+      "is_gathering": "0x00800000",
+      "invincible": "0x04000000",
+      "hallucination": "0x40000000"
+    },
+    "movement_bits": {
+      "accelerating": "0x02",
+      "braking": "0x04",
+      "moving": "0x10"
+    }
+  },
+  "corder": {
+    "record_bytes": "0x28",
+    "fields": {
+      "prev": {
+        "offset": "0x0",
+        "type": "pointer"
+      },
+      "next": {
+        "offset": "0x8",
+        "type": "pointer"
+      },
+      "order_id": {
+        "offset": "0x10",
+        "type": "u8"
+      },
+      "unit_type_id": {
+        "offset": "0x12",
+        "type": "u16"
+      },
+      "target_x": {
+        "offset": "0x18",
+        "type": "i16"
+      },
+      "target_y": {
+        "offset": "0x1A",
+        "type": "i16"
+      },
+      "target_unit_ptr": {
+        "offset": "0x20",
+        "type": "pointer"
+      }
+    },
+    "public_queue_limit": 8,
+    "linked_node_limit": 32
+  },
+  "csprite": {
+    "fields": {
+      "visibility_player_flags": {
+        "offset": "0x14",
+        "type": "u8",
+        "status": "validated",
+        "limits": "Sprite 플래그 비트 5의 의미와 좌표 인코딩은 미확인"
+      },
+      "primary_image_ptr": {
+        "offset": "0x30",
+        "type": "pointer",
+        "status": "validated"
+      }
+    },
+    "cimage_attack_inputs": {
+      "animation": {
+        "offset": "0x1E",
+        "type": "u8",
+        "status": "validated"
+      },
+      "frame_set": {
+        "offset": "0x20",
+        "type": "u16",
+        "status": "validated"
+      },
+      "parent_sprite": {
+        "offset": "0x50",
+        "type": "pointer",
+        "status": "validated"
+      },
+      "source": "BWAPI attack frame 판정 입력: CImage animation(+0x1E), frame_set(+0x20), parent sprite(+0x50)"
+    },
+    "attack_state_projection": {
+      "relation": "CUnit+0x28 sprite -> CSprite+0x30 primary image -> CImage+0x1E animation, +0x20 frame_set, +0x50 parent sprite",
+      "history": "unavailable: raw acquisition may advance and restamp the last observed frame; previous header frame is not an atomic-tick history source",
+      "public_values": "is_attacking current-chain plus original-target true/false; is_attack_frame non-attacking false or non-rest attack frame true, otherwise nullable; is_starting_attack non-attacking false, otherwise nullable",
+      "next_source": "atomic tick capture or authoritative event source",
+      "status": "validated",
+      "limits": "is_attacking만 확정이다. is_attack_frame·is_starting_attack은 부분 지원(partial)이며 일부 상태에서 nullable이다."
+    }
+  },
+  "bullet": {
+    "root": {
+      "module_offset": "0xE5F660",
+      "bytes": "0x50",
+      "fields": {
+        "free_head": "0x0",
+        "free_tail": "0x8",
+        "pool_base": "0x28",
+        "active_head": "0x40",
+        "active_tail": "0x48"
+      }
+    },
+    "record_bytes": "0xA8",
+    "pool_capacity": 400,
+    "fields": {
+      "prev": {
+        "offset": "0x0",
+        "type": "pointer"
+      },
+      "next": {
+        "offset": "0x8",
+        "type": "pointer"
+      },
+      "active_marker": {
+        "offset": "0x10",
+        "type": "u32",
+        "active_list_requires": 1,
+        "free_list": "unconstrained"
+      },
+      "sprite_ptr": {
+        "offset": "0x18",
+        "type": "pointer"
+      },
+      "type_id": {
+        "offset": "0x3C",
+        "type": "u16"
+      },
+      "position_x": {
+        "offset": "0x40",
+        "type": "i16"
+      },
+      "position_y": {
+        "offset": "0x42",
+        "type": "i16"
+      },
+      "velocity_x_raw": {
+        "offset": "0x58",
+        "type": "i32",
+        "scale": "1/256",
+        "status": "validated"
+      },
+      "velocity_y_raw": {
+        "offset": "0x5C",
+        "type": "i32",
+        "scale": "1/256",
+        "status": "validated"
+      },
+      "velocity_direction_raw": {
+        "offset": "0x62",
+        "type": "u8",
+        "convention": "0=north,64=east,128=south,192=west",
+        "status": "validated"
+      },
+      "source_player": {
+        "offset": "0x68",
+        "type": "u8",
+        "status": "validated"
+      },
+      "target_x": {
+        "offset": "0x78",
+        "type": "i16"
+      },
+      "target_y": {
+        "offset": "0x7A",
+        "type": "i16"
+      },
+      "target_cunit_ptr": {
+        "offset": "0x80",
+        "type": "pointer"
+      },
+      "weapon_id": {
+        "offset": "0x88",
+        "type": "u8",
+        "status": "validated",
+        "meaning": "Bullet 무기 ID."
+      },
+      "remove_timer": {
+        "offset": "0x89",
+        "type": "u8",
+        "status": "validated"
+      },
+      "source_cunit_ptr": {
+        "offset": "0x90",
+        "type": "pointer"
+      }
+    },
+    "identity": {
+      "tag": "bullet:slot:N:incarnation:M",
+      "transition": "successful complete active/free observation: inactive -> active increments incarnation",
+      "not_death": [
+        "visibility absence",
+        "read failure",
+        "duplicate polling"
+      ],
+      "remaining_gap": "complete slot replacement between observations is not distinguishable"
+    },
+    "unresolved": []
+  },
+  "map_pathing": {
+    "active_tile": {
+      "pointer_module_offset": "0xE7E460",
+      "cell_bytes": "0x4",
+      "status": "validated",
+      "source": "BWAPI ActiveTile primary layout and current SCR labelled live observation",
+      "cells": "row-major build tiles: x + y*map_width",
+      "byte_layout": {
+        "0": "visibility player flags",
+        "1": "explored player flags",
+        "2": {
+          "walkable": "0x01 (not used for the public minitile grid)",
+          "unwalkable": "0x04",
+          "has_creep": "0x40",
+          "always_unbuildable": "0x80"
+        },
+        "3": {
+          "ground_height": "0x07",
+          "occupied": "0x08",
+          "creep_receding": "0x10",
+          "cliff_edge": "0x20",
+          "temporary_creep": "0x40"
+        }
+      },
+      "semantics": {
+        "buildable": "!(byte2 & (0x80 | 0x04))",
+        "creep": "(byte2 & 0x40) || (byte3 & 0x40)",
+        "ground_height": "byte3 & 0x07"
+      }
+    },
+    "sai_pathing": {
+      "pointer_module_offset": "0x1097780",
+      "allocation_bytes": "0xA1670",
+      "status": "validated",
+      "tile_grid": "0x18",
+      "split_table": "0x20018",
+      "region_table": "0x44A08",
+      "region_stride": "0x48",
+      "region_capacity": 5000,
+      "walkability": "4x4 minitiles per build tile; split mask selects secondary region, otherwise primary; RegionState.accessible is the value",
+      "bwapi_bottom_edge_exclusion": "y >= height*4-4, or y >= height*4-8 with x < 20 or x >= width*4-20"
+    }
+  },
+  "command_profile": {
+    "module_size": "0x1450000",
+    "rvas": {
+      "target_encoder": "0x1C6410",
+      "target_order_builder": "0x37A850",
+      "select_units": "0x37E930",
+      "enqueue": "0x3921A0",
+      "is_in_game": "0xDAF178",
+      "move_screen": "0x2AD310",
+      "end_game": "0x3072F0",
+      "replay_show_entire_map": "0x1095860",
+      "ttf_cache_character": "0x621DC0",
+      "send_text": "0x4B4160",
+      "chat_context_global": "0xDE0088",
+      "replay_visions": "0x109585C",
+      "local_visions": "0x10908E0",
+      "chat_context_xor_key": "0x4564D796A638067D"
+    },
+    "renderer": {
+      "vertex_allocation_bytes": 32,
+      "vertex_stride_bytes": 20,
+      "status": "validated",
+      "limits": "진단 bundle 범위. Box/ASCII Text와 한글 혼합 문자열의 화면 표시·생존을 확인했다. 전체 shape/HD 조합은 검증하지 않았다."
+    },
+    "screen_control_locator": {
+      "source": "MoveScreen",
+      "loaded_image_entry_bytes": 64,
+      "status": "validated",
+      "limits": "Python·.NET viewport 효과는 확인했다. native AIModule은 admission만 확인했고 별도 viewport 전이는 확인하지 않았다."
+    },
+    "selection_table_module_offset": "0x10907F0",
+    "game_control_packets": {
+      "pause_game": {
+        "bytes": "0x10",
+        "source": "BW::Orders::PauseGame",
+        "status": "validated",
+        "observation": "수락되면 paused=true가 된다. native general command·.NET 직접 호출은 미확인."
+      },
+      "resume_game": {
+        "bytes": "0x11",
+        "source": "BW::Orders::ResumeGame",
+        "status": "validated",
+        "observation": "수락되면 frame이 다시 진행한다. native general command·.NET 직접 호출은 미확인."
+      },
+      "restart_game": {
+        "bytes": "0x08",
+        "source": "BW::Orders::RestartGame",
+        "admission": "network_in_match=false",
+        "status": "validated",
+        "observation": "수락되면 frame이 처음으로 돌아가 generation이 바뀌고 Python·native AIModule·Tournament AI의 onStart가 다시 호출된다."
+      }
+    },
+    "profile_digests": "crates/layout/src/lib.rs"
+  },
+  "diagnostic_relations": {
+    "native_sight_range": {
+      "status": "static",
+      "function_rva": "0x1BAE50",
+      "caller_rva": "0x1B4220",
+      "input": "native Unit+0x8C type u16, Unit+0x68 owner u8, EDX condition",
+      "limits": "EDX meaning, early 4/2 tile branches, runtime base table values and actual function return unobserved",
+      "meaning": "type 1/42/70/84 -> upgrade 20/25/41/38 -> level lookup RVA0x3D4D40; upgraded 11 tiles, caller shifts by 5 to pixels. Player 시야 계산 upgrade cases와 대응"
+    },
+    "native_weapon_max_range": {
+      "status": "static",
+      "function_rva": "0x1B87F0",
+      "caller_rva": "0x1B8AA7",
+      "input": "native Unit and weapon id u8",
+      "limits": "Type-specific branches, loaded base table and actual function return unobserved; linear decode after 0x1B8974 crosses jump table",
+      "meaning": "Unit type/weapon conditions query upgrade 16/30/33/54 through RVA0x3D4D40, add 32/64/96 pixel bonuses and weapon-id-indexed base range. Combat caller sends result to distance comparison"
+    },
+    "native_weapon_min_range_check": {
+      "status": "static",
+      "caller_rva": "0x1B8A85",
+      "other_caller_rva": "0x1B79BA",
+      "unit_rect_rva": "0x1C6980",
+      "gap_metric_rva": "0x21D820",
+      "distance_compare_rva": "0x1BA340",
+      "input": "weapon ID<130 -> module+0xE5E220 u32 threshold; Unit+0x18 Sprite position and type-indexed module+0xE5BA20 u16[4] rectangle extents; type flag module+0xE5A3E0 bit0x10 may substitute first Unit with Unit+0xA0",
+      "output": "0x1BA340 calculates nonnegative x/y gaps between axis-aligned rectangles (overlap/contact=0), calls 0x21D820 integer approximation: A=max gaps, B=min; B<=(A>>2) ? A : A+((B+B>>1)>>2)+((B+B>>1)>>7)-(A>>6)-(A>>4). RVA0x1BA403 unsigned <= compares threshold; 0x1B8A9E rejects attack branch when true",
+      "limits": "중심거리 또는 정확한 sqrt로 취급하지 않음. Sprite 좌표 절대 단위·표 실제 값·Unit+0xA0 의미·실제 공격 결과 미관측"
+    },
+    "native_unit_top_speed": {
+      "status": "static",
+      "function_rva": "0x1C6580",
+      "apply_caller_rva": "0x1E8D35",
+      "setter_rva": "0x189A20",
+      "input": "native Unit+0x8C type -> module+0xE58790 flingy id -> module+0xE42E80 base speed; Unit+0x1A1 stim, +0x1A2 ensnare, +0x140 SpeedUpgrade bit0x10000000",
+      "output": "setter writes native Unit+0x4C (record+0x5C) u32; /256 speed unit",
+      "limits": "Static code only. 타입 분기 적용 범위, 별도 순회 flag 원천·실행 시점, 비트 해제와 런타임 값·행동 미관측. Current-unit effects make this broader than Player.topSpeed(type)"
+    },
+    "native_unit_acceleration_turn": {
+      "status": "static",
+      "acceleration_rva": "0x1C64A0",
+      "turn_rva": "0x1C6510",
+      "apply_caller_rva": "0x1E8D47/0x1E8D5A",
+      "setter_rva": "0x189A60/0x189A70",
+      "input": "native Unit+0x8C type -> module+0xE58790 flingy id -> module+0xE431D0 u16 acceleration or +0xE436D0 u8 turn; stim, ensnare, SpeedUpgrade bit",
+      "output": "native Unit+0x60 (record+0x70) u16 acceleration and Unit+0x3A (record+0x4A) u8 turn",
+      "limits": "필드 offset은 cunit 필드와 같다. 기본 표의 런타임 값과 함수 실행·적용 시점은 미관측"
+    },
+    "native_weapon_cooldown": {
+      "status": "static",
+      "function_rva": "0x1B5B00",
+      "effect_sign_rva": "0x1C5EF0",
+      "caller_rva": "0x1E2062/0x1E207D",
+      "input": "native Unit and weapon ID -> module+0xE5EE60 base u8; Unit+0x1B6 acid spore count, +0x1A1 stim, +0x1A2 ensnare, +0x140 CooldownUpgrade bit0x20000000",
+      "output": "native Unit+0x71/+0x72 (record+0x81/+0x82) ground/air cooldown u8",
+      "limits": "타이머 필드 위치는 cunit 필드와 같다. 타입 분기 적용 범위, 별도 순회 flag 원천·실행 시점, 비트 해제·실게임 값 미관측; Player.weaponDamageCooldown(type)과 동일 범위 아님"
+    },
+    "native_upgrade_research_time": {
+      "status": "static",
+      "upgrade_start_rva": "0x1E8E20",
+      "research_start_rva": "0x1E8D80",
+      "upgrade_input": "native Unit owner +0x68, upgrade ID <61, current level from RVA0x3D4D40, module+0xE5DA20 base u16 and +0xE5DAA0 increment u16",
+      "research_input": "native Unit owner +0x68, tech ID <44, module+0xE584C0 time u16",
+      "output": "both write native Unit+0x112 (record+0x122) remaining time; upgrade ID +0x115/next level +0x119, tech ID +0x114",
+      "limits": "잔여시간 필드는 cunit 필드와 같다. 실제 표값·함수 실행 및 유효성 검사 callee의 전체 의미 미관측"
+    },
+    "native_unit_build_time_progress": {
+      "status": "static",
+      "time_rva": "0x1A7210",
+      "progress_rva": "0x1A72A0",
+      "queue_type_rva": "0x1C7E00",
+      "input": "native Unit; base type from helper 0x1C6280; type36/59/97 또는 0x1ED620 참이면 native Unit+0xE8 slot으로 Unit+0xDC+slot*2 u16 queue type 선택; module+0xE5C6B0 u16 if type<0xE4 else +0xE5C880 u16 at type-0xE4; progress also native Unit+0xF0 remaining u16",
+      "output": "time returns table value; progress returns 0 for total=0, otherwise signed integer division of (total-remaining)*100 by total",
+      "limits": "0x1ED620 선행 0x1C70E0 조건 의미, 추가표 끝 범위, 실제 표값·함수 실행 미관측. queue slot/type 필드는 reader 위치와 같다"
+    },
+    "native_upgrade_max_level_helper": {
+      "status": "static",
+      "function_rva": "0x3D4D90",
+      "input": "ECX player slot, DX upgrade ID; existing BWGame+0xDF98 SC max array for ID<0x2E or +0x10188 BW max array for ID>=0x2E",
+      "limits": "BWGame 최대 레벨 배열을 소비하는 함수 연결이다. 0x1E8E20 시작 함수는 현재 레벨 0x3D4D40으로 시간·다음 레벨을 계산하고 0x2A7E90은 비용·잔액을 검사한다. 이 경로에서 현재 대 최대 레벨 비교·실제 제한 효과 미확인",
+      "meaning": "저장 이미지 RVA0x3D4D90의 두 BWGame 최대 레벨 배열 조회"
+    },
+    "native_vulture_mine_count_lifecycle": {
+      "status": "static",
+      "type_gate_rva": "0x1C7CB0",
+      "init_rva": "0x1C0158",
+      "deploy_rva": "0x1E041A/0x1E045B",
+      "input": "existing CUnit record+0x118 = native Unit+0x108 u8, type2/19 gated reader source",
+      "limits": "reader가 읽는 mine count 필드의 writer 연결이다. 실제 값·게임 실행, 생성 실패/명령 상태별 변화 미관측",
+      "meaning": "저장 이미지 0x1C7CB0 type2/19 분기, 0x1C0158 count3 초기화, 0x1E041A type13 Spider Mine 생성 반환이 nonzero인 경로의 0x1E045B count 감소"
+    },
+    "native_weapon_selection_air_status": {
+      "status": "static",
+      "function_rva": "0x1C7420",
+      "callers": [
+        "0x1B8A46",
+        "0x1B795D"
+      ],
+      "input": "existing native Unit+0x140 bit0x4 InAir",
+      "limits": "native 필드나 무기별 target-mask 표 주소가 아니다. facade WeaponType.wpnFlags와 native 표 연결, 기타 대상 판정·실게임 공격 허용 결과 미확인",
+      "meaning": "저장 이미지 0x1C7420이 bit0x4를 0/1로 반환, 두 caller가 대상 Unit 상태로 기본/대체 weapon ID를 선택"
+    },
+    "native_unit_seek_range": {
+      "status": "static",
+      "getter_rva": "0x1B4E80",
+      "table_update_rva": "0x1BFC50",
+      "input": "native Unit type -> module+0xE5A770 u8; upgrade 16/30/33/54 and BWGame+0x10350 branches",
+      "output": "getter adds conditional 0..3 to byte table; updater compares existing byte with ground/air weapon max range module+0xE5E430 >>5 and writes r8b back at RVA0x1BFCF9",
+      "limits": "공개 UnitType.seekRange와 관련 후보일 뿐 동일값/모든 목표 탐색 행동 미확정. 런타임 값·효과 미관측; 시야·은폐 탐지와 구분"
+    },
+    "native_terrain_pixel_height": {
+      "status": "static",
+      "function_rva": "0x227070",
+      "callers": [
+        "0x1B6722",
+        "0x1D575E"
+      ],
+      "input": "x/y pixels -> trunc(y/32)*BWGame+0xE4 width+trunc(x/32) tile index; u16 tile via module+0xE7E490, tile value0 fallback to module+0xE7E478; CV5 +0x10CC240, minitile data +0xE7E450",
+      "output": "minitile u16 bit2 mask0x04 => 2, otherwise bit1 mask0x02 => 0/1",
+      "limits": "E7E490의 역할·실제 값/행동 미관측. active tile byte3&7 build-tile 높이와 별도 경로이며 공개 API 동일성 미확정"
+    },
+    "native_terrain_path_tile_check": {
+      "status": "static",
+      "function_rva": "0x1D1120",
+      "callers": [
+        "0x1CEB22",
+        "0x1D13DE"
+      ],
+      "input": "signed16 x/y pixel coordinates -> trunc(y/32)*BWGame+0xE4 width+trunc(x/32); existing active tile pointer module+0xE7E460 dword; conditional existing vx4 tile pointer +0xED3B98 u16 and minitile data +0xE7E450 u16",
+      "output": "active tile bit22 (byte2 mask0x40) => 1; otherwise bit29 (byte3 mask0x20) set => minitile bit0; otherwise active tile bit16 (byte2 mask0x01). Caller 0x1D13DE treats 0 as failure -1",
+      "limits": "active tile 포인터를 소비하는 경로다. bit22의 게임 의미·실제 버퍼값/이동결과·공개 isWalkable 동일성 미확정"
+    },
+    "native_defaultflags_active_tile_writer": {
+      "status": "static",
+      "function_rva": "0x40D2F0",
+      "input": "build-tile x/y, tile ID u16, R8D branch; BWGame+0xE4 width, existing CV5 +0x10CC240, default flags +0xE7E458, map tile +0xED3B98",
+      "output": "CV5-derived u16&0x7FFF indexes default flags dword; mask 0x450000 and conditional bit16/bit18 are written to existing active tile +0xE7E460; other branch writes map tile u16 and adjusts active bit30",
+      "limits": "타일 포인터 사이의 writer 연결이다. 직접 호출자·실행 시점, R8D/R9W 원천, 각 비트 의미·실제 값 미관측"
+    },
+    "native_order_queue": {
+      "status": "static",
+      "allocate_rva": "0x195750",
+      "create_callers": [
+        "0x1C8610",
+        "0x1C8F10"
+      ],
+      "remove_rva": "0x1C8A40",
+      "free_rva": "0x1957B0",
+      "input": "module+0xE76920/E76928 free Order list; native Unit+0xA8/+0xB0 queue head/tail; Order+0/+8 previous/next",
+      "output": "Order+0x10 command ID byte, +0x12 unit type u16, +0x18..+0x27 target block; module+0xE76948 active count",
+      "limits": "Unit+0xA8/+0xB0/+0xC8은 reader의 record+0xB8/+0xC0/+0xD8에 대응한다. Order+0x10의 상위 byte, 대상 블록의 모든 필드·실제 명령 결과 미확정. 외부 BWRAPI mailbox와 별개"
+    },
+    "native_tech_energy_cost_compare": {
+      "status": "static",
+      "function_rva": "0x1C3340",
+      "caller_rva": "0x1D9E58",
+      "input": "CL internal command ID -> module+0xE546E0 tech ID u8; if tech ID<44, module+0xE58520 u16 cost",
+      "output": "tech ID>=44 returns 0; otherwise shl ax,8 and caller compares resulting u16 with native Unit+0xE6 current raw energy",
+      "limits": "게임 내부 명령 ID는 BWAPI CommandKind와 구분. 표값, 실제 에너지 차감·명령 성공 미관측. 최대 에너지 계산 경로와 별개"
+    },
+    "native_bullet_weapon_damage": {
+      "status": "static",
+      "function_rva": "0x185470",
+      "caller_rva": "0x1B378A",
+      "apply_caller_rva": "0x1B37A9",
+      "input": "native Bullet+0x88 weapon ID and +0x68 owner; module+0xE5E880 explosion type, +0xE5E640 upgrade ID, +0xE5EC40 base u16 damage, +0xE5ED50 level bonus u16",
+      "limits": "표 실제 값·실행·최종 피해 미관측. Player.damage의 damageFactor·방어력·대상 감산 전체와 동일시하지 않음",
+      "meaning": "일반 분기는 RVA0x3D4D40 level 조회 후 (base+level*bonus)<<8 반환. Explosion type5 Nuclear_Missile은 대상 기반 별도 분기"
+    },
+    "native_bullet_splash_radius": {
+      "status": "static",
+      "function_rva": "0x185D30",
+      "area_caller_rva": "0x185714",
+      "damage_apply_rva": "0x1B3720",
+      "input": "Bullet+0x88 weapon ID; module+0xE5E910 inner, +0xE5EA20 median, +0xE5EB30 outer u16; module+0xE5E880 explosion type is a separate table",
+      "limits": "0x1B2DC5 선행 피해 두 배 조건, 나눗셈 뒤 다른 값·최솟값0x80·실드·방어력·피해종류 배율이 있으므로 최종 100/50/25%로 일반화 불가. 0x1B3728 bit2 탄환은 별도 분기. 반경 경계·단위, 실제 표값·효과 미관측",
+      "meaning": "저장 이미지 0x185DB0 outer 대상 검사, 조건부 0x185DF5 inner 검사와 0x185E40 median 검사 뒤 R8D=1/2/4를 0x185E6B→0x1B3720에 전달. 일반 탄환 분기에서 0x1B3793 R9D→0x1B2D30, 0x1B2DE4 div ebp로 raw 피해 나눗셈 분모로 소비. 폭발 유형2/3 경로 0x185714에서 outer radius로 검색 사각형 구성"
+    },
+    "native_upgrade_research_cost": {
+      "status": "static",
+      "upgrade_cost_rva": [
+        "0x1EC180",
+        "0x1EC140"
+      ],
+      "upgrade_consumer_rva": "0x2A7E90",
+      "research_cost_rva": "0x2A7CD0",
+      "balance_check_rva": "0x2A7BD0",
+      "deduct_rva": "0x2A7C80",
+      "input": "owner ID, upgrade/tech ID; upgrade current level via 0x3D4D40; mineral=module+0xE5D820 + level*(+0xE5D8A0), gas=+0xE5D920 + level*(+0xE5D9A0); research mineral=+0xE58400, gas=+0xE58460",
+      "output": "owner-indexed u32 cost slots module+0xED3A80 mineral and +0xED3AB0 gas; BWGame+owner*4 mineral and +0x30+owner*4 gas balances compared and deducted",
+      "limits": "실제 표값, 차감 함수의 모든 호출 조건과 실게임 결제 결과 미관측"
+    },
+    "native_unit_cost_supply": {
+      "status": "static",
+      "function_rva": "0x2A7D20",
+      "training_caller_rva": "0x1A5F98",
+      "input": "owner ID, unit type u16, conditional supply flag; module+0xE5C310 mineral u16, +0xE5C4E0 gas u16, +0xE5CC30 supply u8, +0xE5A3E0 attributes u32",
+      "output": "owner-indexed cost slots module+0xED3A80 mineral/+0xED3AB0 gas, conditional supply slot +0xED3AE0; attribute bit index10 (mask0x400) doubles supply input",
+      "limits": "속성 이름, 표시 단위, 전체 소비자 범위·실제 게임 결제 미관측"
+    },
+    "native_unit_armor_damage_apply": {
+      "status": "static",
+      "function_rva": "0x1B2D30",
+      "armor_upgrade_helper_rva": "0x1E7DB0",
+      "shield_upgrade_helper_rva": "0x1C80B0",
+      "input": "native Unit target, raw damage, weapon ID; module+0xE5AB30 base armor, +0xE5A950 armor upgrade ID, +0xE5AA40 unit size; BWGame+0x10350 branch condition",
+      "limits": "분기 전역조건, 각 표 런타임 값, 함수 실행과 최종 피해 미관측. 전체 방어력 API나 모든 피해 종류 산식으로 일반화하지 않음",
+      "meaning": "RVA0x1B2EA3..0x1B2EC4에서 기본 방어력+업그레이드 결과를 <<8 후 잔여 피해에서 차감; 별도 type39/48·attribute bit0x40·upgrade52의 +2 경로. 피해 적용 뒤 unit size와 module+0xE5E6D0 종류 byte를 0x2D4B80에 전달"
+    },
+    "native_damage_kind_size_factor": {
+      "status": "static",
+      "function_rva": "0x2D4B80",
+      "input": "raw damage, kind from module+0xE5E6D0 by weapon ID, size from module+0xE5AA40 by target type",
+      "limits": "kind/size enum 의미, 런타임 배율 전체와 실제 최종 피해 미관측",
+      "meaning": "저장 이미지 RVA0x2D4B83..0x2D4B9B에서 index=kind*5+size를 계산해 module+0xDB1658 u32 배율 조회, rawDamage*factor>>8 반환"
+    },
+    "unit_energy_limit_candidate": {
+      "status": "static",
+      "caller_rva": "0x1E6F30",
+      "regeneration_wrapper_rva": "0x1DA620",
+      "max_energy_rva": "0x1DA4E0",
+      "upgrade_level_rva": "0x3D4D40",
+      "native_unit_basis": "record+0x10",
+      "limits": "현재 실행 이미지의 정적 근거. bit0x40 속성 명칭·실제 호출/레벨·업그레이드 전후 상한 미관측. 타입별 공개 최대치와 게임 함수 반환을 일반적으로 동일시하지 않음",
+      "meaning": "native+0xE6(record+0xF6) 에너지를 +8씩 재생하고 wrapper 반환으로 제한. 타입별 업그레이드 ID 11쌍이 Player.maxEnergy와 정적으로 일치. 소유자·업그레이드 ID로 레벨 바이트 조회, 다크 아콘 CompletingArchonSummon 상태에서 wrapper는 50×256 반환, 그 밖에는 200/250×256 경로"
+    },
+    "loaded_unit_slot": "idx=record_offset/0x1E8; uniq=record+0xF9; slot=(idx-2048+1)|(((uniq<<2)|1)<<11)",
+    "selection_pointer": "record+0x10",
+    "cunit_pool_capacity": 3400,
+    "private_ghost_nuke_marker": {
+      "status": "static",
+      "parent_chain": "CUnit record+0x138 -> lone object+0x18 pointer -> CSprite+0x14 visibility and encoded coordinates at +0x20/+0x28",
+      "unit_type_whitelist": [
+        1,
+        16,
+        99,
+        100,
+        104
+      ],
+      "raw_sources": {
+        "scalar_9_51": "u64 raw PEB+0x18 LoaderData before child reads; physical source address",
+        "scalar_9_52": "u64 raw PEB+0x18 LoaderData after child reads; physical source address",
+        "scalar_9_53": "32-byte typed rows with synthetic source_base_address=0"
+      },
+      "row_layout": "ordinal u32@0, uniqueness u32@4, state u32@8 (0 unknown/1 absent/2 present), visibility u32@12, x i32@16, y i32@20, reserved u64@24",
+      "row_source_offset": "packed row index*32; canonical CUnit ordinal is payload field@0",
+      "availability": "Only a stable null CUnit+0x138 parent is absent. Profile pin mismatch, unknown metadata, read failure, changed parent type/uniqueness/dot pointer, changed child sprite pointer, or changed sprite header yields unknown. Visibility is valid only with a full captured 28-byte header; coordinates are valid only for present rows; reserved zero is valid.",
+      "decode": "key=low16(F2FE977235ADBB5C XOR (5CBCFCFDE154F4D0 - rol64(LoaderData,9))); x/y=low16(encoded_u64 XOR key)",
+      "pinned_code": {
+        "x_getter": "RVA 0x195170, 396 bytes",
+        "y_getter": "RVA 0x195300, 396 bytes",
+        "helper": "RVA 0xB2A18, 754 bytes",
+        "loaded_helper_comparison": "Exact full 754-byte comparison: imm64 at offsets37/52 must equal checked current module base+RVA0x1000/0xAACFE4; all other738 bytes and complete X/Y pins unchanged. Not claimed as formal PE relocation. Base0/overflow/out-of-module reject."
+      },
+      "limits": "Code identity is checked once per process/module identity and cached; PEB+0x18 is sampled on every capture. Static decoder evidence covers ordinary sprites only; Ghost/nuke is not live-validated."
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "profiles": [
+    {
+      "profile_id": "bwapi-4.4.0-source",
+      "kind": "source",
+      "bwapi_version": "4.4.0",
+      "upstream_commit": "d727fed68558c506163048ea889131d8cbb33915",
+      "license": "LGPL-3.0",
+      "status": "supported",
+      "launch_role": "python_client"
+    },
+    {
+      "profile_id": "bwapi-4.4.0-win32-binary",
+      "kind": "binary",
+      "platform": "windows-x86",
+      "bwapi_version": "4.4.0",
+      "status": "supported",
+      "launch_role": "standard_aimodule",
+      "client_version": 10003,
+      "required_exports": ["gameInit", "newAIModule"],
+      "loader_architecture": "x86",
+      "server_architectures": ["x64", "x86"],
+      "transport": {
+        "game_table": "Local\\bwapi_shared_memory_game_list",
+        "game_data": "Local\\bwapi_shared_memory_<game_pid>",
+        "pipe": "\\\\.\\pipe\\bwapi_pipe_<game_pid>"
+      }
+    },
+    {
+      "profile_id": "bwapi-4.4.0-tournament-module",
+      "kind": "binary",
+      "platform": "windows-x86",
+      "bwapi_version": "4.4.0",
+      "status": "supported",
+      "launch_role": "tournament",
+      "required_exports": ["gameInit", "newTournamentAI", "newTournamentModule"]
+    },
+    {
+      "profile_id": "bwapi-4.4.0-client-exe",
+      "kind": "binary",
+      "platform": "windows-x86",
+      "bwapi_version": "4.4.0",
+      "status": "supported",
+      "launch_role": "client_exe"
+    }
+  ]
+}
