@@ -1,0 +1,4 @@
+# The declarations generated from the engine tables carry no per-member
+# comments; their columns are documented in docs/C-ABI.md.
+[obj/**/Native.g.cs]
+dotnet_diagnostic.CS1591.severity = none

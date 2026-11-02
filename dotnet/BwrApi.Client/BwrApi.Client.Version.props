@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <BwrApiClientPackageVersion>1.0.0</BwrApiClientPackageVersion>
+  </PropertyGroup>
+</Project>

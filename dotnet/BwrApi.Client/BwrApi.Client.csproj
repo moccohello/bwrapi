@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="BwrApi.Client.Version.props" />
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageId>BwrApi.Client</PackageId>
+    <Version>$(BwrApiClientPackageVersion)</Version>
+    <Authors>BWRAPI contributors</Authors>
+    <Description>.NET binding of the BWRAPI C ABI 1.0 (BWAPI for StarCraft: Remastered): reads a running game into column tables and issues commands.</Description>
+    <PackageTags>BWRAPI;BWAPI;StarCraft;interop</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/moccohello/bwrapi</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/moccohello/bwrapi</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <!-- IntelliSense docs ship in the package; the generated declarations
+         document their columns in docs/C-ABI.md, so .editorconfig silences
+         missing-comment warnings for Native.g.cs only. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>true</IsPackable>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\'))</RepoRoot>
+    <!-- Cargo output for the native library and the binding generator; xtask passes its own. -->
+    <BwrApiCargoTarget Condition="'$(BwrApiCargoTarget)' == ''">$(RepoRoot)build\cargo</BwrApiCargoTarget>
+    <!-- Under `cargo xtask`, cargo passes its own path in CARGO. -->
+    <BwrApiCargo Condition="'$(CARGO)' != ''">&quot;$(CARGO)&quot;</BwrApiCargo>
+    <BwrApiCargo Condition="'$(CARGO)' == ''">cargo</BwrApiCargo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="$(RepoRoot)LICENSE" Pack="true" PackagePath="\" />
+    <None Include="$(RepoRoot)host\package\THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="\" />
+    <None Include="$(BwrApiCargoTarget)\release\bwrapi.dll"
+          Link="bwrapi.dll"
+          CopyToOutputDirectory="PreserveNewest"
+          Pack="true"
+          PackagePath="runtimes/win-x64/native/" />
+    <!-- The x86 library for 32-bit .NET processes; the x64 build output keeps only the x64 one. -->
+    <None Include="$(BwrApiCargoTarget)\i686-pc-windows-msvc\release\bwrapi.dll"
+          Pack="true"
+          PackagePath="runtimes/win-x86/native/" />
+  </ItemGroup>
+
+  <!-- The native library and Native.g.cs come from the Rust crates at build time. -->
+  <Target Name="BuildBwrApiNative" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <BwrApiGenerated>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)bwrapi</BwrApiGenerated>
+    </PropertyGroup>
+    <Exec Command="$(BwrApiCargo) build --release -q --manifest-path &quot;$(RepoRoot)Cargo.toml&quot; -p bwrapi-ffi" EnvironmentVariables="CARGO_TARGET_DIR=$(BwrApiCargoTarget)" />
+    <Exec Command="$(BwrApiCargo) build --release -q --manifest-path &quot;$(RepoRoot)Cargo.toml&quot; -p bwrapi-ffi --target i686-pc-windows-msvc" EnvironmentVariables="CARGO_TARGET_DIR=$(BwrApiCargoTarget)" />
+    <Exec Command="$(BwrApiCargo) run --release -q --manifest-path &quot;$(RepoRoot)Cargo.toml&quot; -p bwrapi-ffi --bin bwrapi-gen -- &quot;$(BwrApiGenerated)&quot;" EnvironmentVariables="CARGO_TARGET_DIR=$(BwrApiCargoTarget)" />
+    <ItemGroup>
+      <Compile Include="$(BwrApiGenerated)\Native.g.cs" />
+    </ItemGroup>
+  </Target>
+</Project>
